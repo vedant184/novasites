@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NovaSites — Build Your Universe on the Web</title>
+<meta name="description" content="AI-powered website generator — describe your idea, watch AI agents build it live. Universe-themed, bilingual (हिंदी/English).">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🪐</text></svg>">
+<style>
+  :root{
+    --bg:#030308; --blue:#0b1230; --purple:#8b5cf6; --cyan:#22d3ee; --white:#eef1fa;
+    --panel:rgba(255,255,255,.045); --panel2:rgba(255,255,255,.028); --line:rgba(255,255,255,.1);
+    --dim:#93a0bc; --grad:linear-gradient(135deg,#8b5cf6,#22d3ee);
+    --glow:0 0 22px rgba(139,92,246,.45);
+  }
+  *{box-sizing:border-box; margin:0; padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg); color:var(--white); overflow-x:hidden; line-height:1.65; min-height:100vh;
+    font-family:'Segoe UI',system-ui,-apple-system,'Noto Sans','Nirmala UI','Noto Sans Devanagari',sans-serif}
+  [hidden]{display:none !important}
+  #neb,#uni{position:fixed; inset:0; z-index:0; pointer-events:none}
+  .btn{border:none; cursor:pointer; text-decoration:none; font-family:inherit; font-size:.95rem; font-weight:700; border-radius:12px; padding:12px 24px; transition:transform .2s, box-shadow .2s; display:inline-flex; align-items:center; gap:9px; justify-content:center}
+  .btn.p{background:var(--grad); color:#fff; box-shadow:0 8px 30px rgba(139,92,246,.4)}
+  .btn.p:hover{transform:translateY(-2px); box-shadow:0 12px 40px rgba(139,92,246,.55)}
+  .btn.g{background:var(--panel); color:var(--white); border:1px solid var(--line)}
+  .btn.g:hover{transform:translateY(-2px); border-color:rgba(255,255,255,.32)}
+  .btn.sm{padding:8px 15px; font-size:.84rem; border-radius:10px}
+  .btn:disabled{opacity:.45; cursor:not-allowed; transform:none !important}
+
+  /* ================= LANDING ================= */
+  #landing{position:relative; z-index:2}
+  nav.lnav{position:fixed; top:0; left:0; right:0; z-index:50; backdrop-filter:blur(14px); background:rgba(3,3,8,.55); border-bottom:1px solid var(--line)}
+  .navin{max-width:1150px; margin:auto; display:flex; align-items:center; gap:18px; padding:12px 22px}
+  .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-size:1.1rem; color:var(--white); text-decoration:none}
+  .brand .bico{width:36px; height:36px; border-radius:11px; background:var(--grad); display:grid; place-items:center; font-size:1.05rem; box-shadow:var(--glow)}
+  .navin .sp{flex:1}
+  .navlinks{display:flex; gap:20px; align-items:center}
+  .navlinks a{color:var(--dim); text-decoration:none; font-size:.9rem}
+  .navlinks a:hover{color:#fff}
+  @media(max-width:860px){.navlinks a{display:none}}
+  .lsec{max-width:1150px; margin:auto; padding:84px 22px; position:relative}
+  .hero1{min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding-top:120px}
+  .pill{display:inline-flex; align-items:center; gap:8px; border:1px solid rgba(139,92,246,.5); background:rgba(139,92,246,.1); border-radius:999px; padding:7px 18px; font-size:.84rem; color:#c4b5fd}
+  .pill::before{content:''; width:8px; height:8px; border-radius:50%; background:var(--cyan); box-shadow:0 0 12px var(--cyan); animation:pl 2s infinite}
+  @keyframes pl{0%,100%{opacity:1}50%{opacity:.35}}
+  h1.big{font-size:clamp(2.3rem,6vw,4.1rem); font-weight:850; line-height:1.13; margin:24px 0 16px; max-width:900px}
+  h1.big em{font-style:normal; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent}
+  .lsub{color:var(--dim); max-width:640px; font-size:1.08rem; line-height:1.75}
+  .ctarow{display:flex; gap:14px; margin-top:34px; flex-wrap:wrap; justify-content:center}
+  .gbtn{background:#fff; color:#1f2937; border:none; border-radius:12px; padding:12px 24px; font-weight:700; font-size:.95rem; cursor:pointer; display:inline-flex; align-items:center; gap:10px; font-family:inherit; transition:transform .2s, box-shadow .2s}
+  .gbtn:hover{transform:translateY(-2px); box-shadow:0 10px 30px rgba(255,255,255,.2)}
+  .kick{display:inline-block; font-size:.78rem; font-weight:800; letter-spacing:2.5px; text-transform:uppercase; background:var(--grad); -webkit-background-clip:text; background-clip:text; color:transparent; margin-bottom:10px}
+  h2.sec{font-size:clamp(1.6rem,3.2vw,2.3rem); font-weight:800; margin-bottom:10px}
+  .secsub{color:var(--dim); max-width:620px; margin-bottom:38px}
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  .grid4{display:grid; grid-template-columns:repeat(5,1fr); gap:14px}
+  @media(max-width:900px){.grid3{grid-template-columns:1fr}.grid4{grid-template-columns:repeat(2,1fr)}}
+  .gcard{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:22px; transition:transform .25s, border-color .25s, box-shadow .25s; backdrop-filter:blur(8px)}
+  .gcard:hover{transform:translateY(-4px); border-color:rgba(139,92,246,.55); box-shadow:var(--glow)}
+  .gcard .gi{font-size:1.7rem; margin-bottom:10px}
+  .gcard h3{font-size:1rem; font-weight:800; margin-bottom:6px}
+  .gcard p{color:var(--dim); font-size:.86rem}
+  .steps{display:grid; grid-template-columns:repeat(4,1fr); gap:14px; counter-reset:st}
+  @media(max-width:900px){.steps{grid-template-columns:1fr 1fr}}
+  .step{background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px; position:relative}
+  .step::before{counter-increment:st; content:counter(st); position:absolute; top:-13px; inset-inline-start:16px; width:27px; height:27px; border-radius:50%; background:var(--grad); display:grid; place-items:center; font-size:.8rem; font-weight:800}
+  .step h4{font-size:.94rem; margin:6px 0 5px}
+  .step p{color:var(--dim); font-size:.82rem}
+  .prices{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  @media(max-width:900px){.prices{grid-template-columns:1fr}}
+  .price{background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:24px; text-align:center}
+  .price.hot{border-color:rgba(139,92,246,.65); box-shadow:var(--glow)}
+  .price b{font-size:1.9rem; display:block; margin:8px 0}
+  .price ul{list-style:none; color:var(--dim); font-size:.87rem; margin:14px 0; display:grid; gap:7px}
+  details.faq{background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:16px 20px; margin-bottom:10px}
+  details.faq summary{cursor:pointer; font-weight:700; font-size:.95rem}
+  details.faq p{color:var(--dim); font-size:.88rem; margin-top:10px}
+  footer.lf{border-top:1px solid var(--line); padding:30px 20px; text-align:center; color:var(--dim); font-size:.85rem; position:relative; z-index:2}
+
+  /* ================= GOOGLE MODAL ================= */
+  .gmodal{position:fixed; inset:0; z-index:120; background:rgba(2,2,8,.7); backdrop-filter:blur(5px); display:flex; align-items:center; justify-content:center; padding:18px}
+  .gcardm{width:min(94vw,400px); background:#fff; color:#202124; border-radius:16px; padding:34px 34px 28px; font-family:'Segoe UI',Roboto,Arial,sans-serif; position:relative; box-shadow:0 30px 90px rgba(0,0,0,.6)}
+  .gx{position:absolute; top:12px; inset-inline-end:14px; background:none; border:none; font-size:1rem; color:#5f6368; cursor:pointer; width:30px; height:30px; border-radius:50%}
+  .gx:hover{background:#f1f3f4}
+  .glogo{display:flex; justify-content:center; margin-bottom:14px}
+  .gcardm h3{text-align:center; font-size:1.3rem; font-weight:500; margin-bottom:4px}
+  .gsub{text-align:center; color:#5f6368; font-size:.88rem; margin-bottom:22px}
+  .gacct{display:flex; align-items:center; gap:13px; padding:11px 12px; border:1px solid #dadce0; border-radius:10px; cursor:pointer; margin-bottom:9px; transition:background .15s}
+  .gacct:hover{background:#f8f9fa}
+  .gav{width:34px; height:34px; border-radius:50%; background:var(--grad); color:#fff; display:grid; place-items:center; font-weight:700; font-size:.95rem; flex:none}
+  .gacct .gn{font-size:.92rem; font-weight:600}
+  .gacct .ge{font-size:.78rem; color:#5f6368}
+  .ginp{width:100%; border:1px solid #dadce0; border-radius:9px; padding:11px 13px; font-size:.92rem; margin-bottom:10px; outline:none; font-family:inherit}
+  .ginp:focus{border-color:#1a73e8}
+  .gcont{width:100%; background:#1a73e8; color:#fff; border:none; border-radius:9px; padding:11px; font-size:.93rem; font-weight:600; cursor:pointer; font-family:inherit}
+  .gcont:hover{background:#1765cc}
+  .gnote{font-size:.72rem; color:#80868b; text-align:center; margin-top:16px; line-height:1.5}
+
+  /* ================= DASHBOARD ================= */
+  #dash{position:relative; z-index:2; min-height:100vh; display:flex; flex-direction:column}
+  .dtop{display:flex; align-items:center; gap:12px; padding:10px 18px; border-bottom:1px solid var(--line); background:rgba(3,3,10,.7); backdrop-filter:blur(12px); position:sticky; top:0; z-index:40}
+  .dtop .sp{flex:1}
+  .uchip{display:flex; align-items:center; gap:9px; background:var(--panel); border:1px solid var(--line); border-radius:999px; padding:5px 13px 5px 6px; cursor:pointer}
+  .uav{width:29px; height:29px; border-radius:50%; background:var(--grad); display:grid; place-items:center; font-size:.82rem; font-weight:800; color:#fff}
+  .uchip .un{font-size:.86rem; font-weight:700}
+  .uchip .ue{font-size:.7rem; color:var(--dim)}
+  .icob{background:var(--panel); color:var(--white); border:1px solid var(--line); border-radius:999px; padding:7px 15px; font-size:.85rem; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap}
+  .icob:hover{border-color:var(--cyan)}
+  .dmain{flex:1; display:grid; grid-template-columns:1fr 350px; gap:0; min-height:0}
+  @media(max-width:980px){.dmain{grid-template-columns:1fr} .rpanel{border-inline-start:none !important; border-top:1px solid var(--line)}}
+
+  /* left builder */
+  .lpanel{display:flex; flex-direction:column; min-width:0; min-height:70vh}
+  .ltools{display:flex; align-items:center; gap:8px; padding:10px 14px; border-bottom:1px solid var(--line); flex-wrap:wrap}
+  .tabs2{display:flex; gap:6px}
+  .tb{background:var(--panel2); border:1px solid var(--line); color:var(--dim); border-radius:9px; padding:7px 14px; font-size:.82rem; font-weight:700; cursor:pointer; font-family:inherit}
+  .tb.on{background:var(--grad); color:#fff; border-color:transparent}
+  .devs{display:flex; gap:5px; margin-inline-start:auto}
+  .dv{background:var(--panel2); border:1px solid var(--line); color:var(--dim); border-radius:8px; padding:6px 11px; font-size:.8rem; cursor:pointer; font-family:inherit}
+  .dv.on{color:#fff; border-color:var(--cyan); box-shadow:0 0 10px rgba(34,211,238,.3)}
+  .stage{flex:1; position:relative; padding:14px; display:flex; align-items:stretch; justify-content:center; min-height:520px; background:
+    linear-gradient(rgba(255,255,255,.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.02) 1px, transparent 1px);
+    background-size:34px 34px}
+  .frameWrap{background:#0d0d18; border:1px solid var(--line); border-radius:14px; overflow:hidden; display:flex; flex-direction:column; width:100%; transition:width .4s; margin:auto; height:100%; min-height:520px; box-shadow:0 22px 70px rgba(0,0,0,.5)}
+  .fhead{display:flex; gap:7px; padding:10px 14px; background:var(--panel2); border-bottom:1px solid var(--line); align-items:center}
+  .fd{width:10px; height:10px; border-radius:50%}
+  .furl{flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:8px; font-size:.74rem; color:var(--dim); padding:4px 12px; margin-inline-start:6px}
+  #frame{flex:1; border:none; background:#fff; width:100%}
+  #codeBox,#consoleBox,#histBox{flex:1; overflow:auto; padding:16px 18px; font-family:'Cascadia Code',Consolas,monospace; font-size:.8rem; line-height:1.7; background:#0d0d18; white-space:pre-wrap; word-break:break-all}
+  #codeBox .tg{color:#82aaff}#codeBox .st{color:#c3e88d}#codeBox .cm{color:#546e7a}
+  #consoleBox .cl{display:block}
+  #consoleBox .ok{color:#34d399}#consoleBox .inf{color:#93a0bc}#consoleBox .wr{color:#fbbf24}#consoleBox .ag{color:#22d3ee; font-weight:700}
+  .histItem{display:flex; align-items:center; gap:10px; background:var(--panel); border:1px solid var(--line); border-radius:11px; padding:10px 14px; margin-bottom:9px; font-family:'Segoe UI',sans-serif}
+  .histItem .hp{flex:1; font-size:.84rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .histItem .ht{color:var(--dim); font-size:.72rem}
+  /* build overlay */
+  #buildOv{position:absolute; inset:14px; border-radius:14px; background:rgba(3,3,10,.82); backdrop-filter:blur(6px); z-index:5; display:flex; align-items:center; justify-content:center; padding:20px}
+  .bsteps{width:min(92%,420px)}
+  .bsteps h3{font-size:1.05rem; margin-bottom:16px; display:flex; align-items:center; gap:10px}
+  .bstep{display:flex; align-items:center; gap:11px; padding:8px 4px; font-size:.88rem; color:var(--dim)}
+  .bstep .bi{width:22px; height:22px; border-radius:50%; border:2px solid var(--line); display:grid; place-items:center; font-size:.68rem; flex:none}
+  .bstep.doing{color:#fff}
+  .bstep.doing .bi{border-color:var(--cyan); box-shadow:0 0 10px rgba(34,211,238,.5)}
+  .bstep.doing .bi::after{content:''; width:8px; height:8px; border-radius:50%; background:var(--cyan); animation:pl 1s infinite}
+  .bstep.done{color:#c9d3ea}
+  .bstep.done .bi{border-color:#34d399; background:rgba(52,211,153,.15)}
+  .bstep.done .bi::after{content:'✓'; color:#34d399; font-weight:800}
+  .lbar{margin-inline-start:auto; display:flex; gap:8px}
+
+  /* right panel */
+  .rpanel{border-inline-start:1px solid var(--line); padding:16px; display:flex; flex-direction:column; gap:14px; overflow-y:auto; max-height:calc(100vh - 55px)}
+  .rpanel > *{flex-shrink:0}
+  .rp h3{font-size:.95rem; font-weight:800; margin-bottom:8px; display:flex; align-items:center; gap:8px}
+  #prompt{width:100%; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:13px; padding:13px 15px; color:var(--white); font-size:.92rem; outline:none; font-family:inherit; resize:vertical; min-height:88px}
+  #prompt:focus{border-color:var(--purple); box-shadow:0 0 14px rgba(139,92,246,.25)}
+  .exrow{display:flex; flex-wrap:wrap; gap:7px; margin-top:9px}
+  .ex{border:1px solid var(--line); background:var(--panel2); color:var(--dim); border-radius:999px; padding:4px 12px; font-size:.76rem; cursor:pointer; font-family:inherit}
+  .ex:hover{color:#fff; border-color:var(--cyan)}
+  .genrow{display:flex; gap:9px; margin-top:11px}
+  .genrow .btn{flex:1}
+  .agents{display:grid; gap:8px}
+  .agent{display:flex; align-items:center; gap:11px; background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:9px 12px}
+  .agent .aico{width:32px; height:32px; border-radius:10px; background:var(--panel2); border:1px solid var(--line); display:grid; place-items:center; font-size:1rem; flex:none}
+  .agent .anm{font-size:.84rem; font-weight:700}
+  .agent .arl{font-size:.7rem; color:var(--dim)}
+  .agent .ast{margin-inline-start:auto; font-size:.68rem; font-weight:800; border-radius:999px; padding:3px 10px; background:var(--panel2); border:1px solid var(--line); color:var(--dim); white-space:nowrap}
+  .agent.w .ast{color:#22d3ee; border-color:rgba(34,211,238,.5); box-shadow:0 0 10px rgba(34,211,238,.25); animation:pl 1.1s infinite}
+  .agent.d .ast{color:#34d399; border-color:rgba(52,211,153,.45)}
+  .qacts{display:flex; flex-wrap:wrap; gap:8px}
+  .aip{background:var(--panel); border:1px solid var(--line); border-radius:13px; overflow:hidden}
+  .aip summary{padding:11px 14px; cursor:pointer; font-weight:700; font-size:.85rem; display:flex; align-items:center; gap:9px; list-style:none}
+  .aip summary::-webkit-details-marker{display:none}
+  .sdot{width:9px; height:9px; border-radius:50%; background:#64748b}
+  .sdot.on{background:#34d399; box-shadow:0 0 10px #34d399}
+  .aipin{padding:0 14px 14px; display:grid; gap:9px}
+  .aipin .note{font-size:.74rem; color:var(--dim); line-height:1.55}
+  .fi3{width:100%; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:10px; padding:9px 12px; color:var(--white); font-size:.85rem; outline:none; font-family:inherit}
+  .kcard{width:min(94vw,430px); background:rgba(10,10,26,.97); border:1px solid var(--line); border-radius:20px; padding:26px; position:relative; color:var(--white); box-shadow:0 30px 90px rgba(0,0,0,.6), var(--glow)}
+  .kcard h3{font-size:1.12rem; font-weight:800; margin-bottom:10px; display:flex; gap:10px; align-items:center}
+  .kcard .note{font-size:.8rem; color:var(--dim); line-height:1.6; margin-bottom:14px}
+  .kcard .fi3{margin-bottom:10px; padding:12px 14px; font-size:.92rem}
+  .kx{position:absolute; top:12px; inset-inline-end:14px; background:var(--panel); border:1px solid var(--line); color:var(--dim); width:30px; height:30px; border-radius:50%; cursor:pointer}
+  .kx:hover{color:#fff}
+
+  /* ================= FLOATING CHAT ================= */
+  #fab{position:fixed; bottom:26px; inset-inline-end:26px; z-index:90; width:62px; height:62px; border-radius:50%; border:none; cursor:pointer;
+    background:var(--grad); color:#fff; font-size:1.65rem; display:grid; place-items:center;
+    box-shadow:0 0 24px rgba(139,92,246,.65), 0 0 60px rgba(34,211,238,.3); transition:transform .2s; animation:fabf 3.5s ease-in-out infinite}
+  #fab:hover{transform:scale(1.12) rotate(8deg)}
+  @keyframes fabf{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+  #fab .ndot{position:absolute; top:4px; inset-inline-end:5px; width:13px; height:13px; border-radius:50%; background:#f43f5e; border:2px solid var(--bg)}
+  #chatPanel{position:fixed; top:0; bottom:0; inset-inline-end:0; z-index:95; width:min(94vw,390px); background:rgba(6,6,16,.96); backdrop-filter:blur(16px); border-inline-start:1px solid var(--line); display:flex; flex-direction:column; transform:translateX(110%); transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+  html[dir="rtl"] #chatPanel{transform:translateX(-110%)}
+  #chatPanel.open{transform:translateX(0) !important}
+  .chead{display:flex; align-items:center; gap:11px; padding:14px 16px; border-bottom:1px solid var(--line)}
+  .chead .cavatar{width:36px; height:36px; border-radius:50%; background:var(--grad); display:grid; place-items:center; font-size:1.1rem; box-shadow:var(--glow)}
+  .chead b{font-size:.95rem}
+  .chead .cs{display:block; font-size:.7rem; color:#34d399}
+  .chead .cx{margin-inline-start:auto; background:var(--panel); border:1px solid var(--line); color:var(--dim); width:30px; height:30px; border-radius:50%; cursor:pointer; font-size:.8rem}
+  .cmsgs{flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:11px}
+  .cm2{max-width:86%; padding:10px 14px; border-radius:14px; font-size:.88rem; line-height:1.6; white-space:pre-wrap; overflow-wrap:break-word}
+  .cm2.u{align-self:flex-end; background:var(--grad); color:#fff; border-end-end-radius:4px}
+  .cm2.b{align-self:flex-start; background:rgba(255,255,255,.06); border:1px solid var(--line); border-end-start-radius:4px}
+  .cm2 .tag2{display:block; font-size:.64rem; color:var(--cyan); margin-bottom:4px; font-weight:800; letter-spacing:.3px}
+  .cm2.err{border-color:rgba(248,113,113,.5)} .cm2.err .tag2{color:#f87171}
+  .tdots{display:inline-flex; gap:5px; padding:4px 0}
+  .tdots i{width:7px; height:7px; border-radius:50%; background:var(--dim); animation:bk 1.2s infinite}
+  .tdots i:nth-child(2){animation-delay:.2s}.tdots i:nth-child(3){animation-delay:.4s}
+  @keyframes bk{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .cin2row{display:flex; gap:9px; padding:13px; border-top:1px solid var(--line)}
+  #cin2{flex:1; background:rgba(255,255,255,.05); border:1px solid var(--line); border-radius:12px; padding:11px 14px; color:var(--white); font-size:.9rem; outline:none; font-family:inherit; min-width:0}
+  #cin2:focus{border-color:var(--purple)}
+  .cchips{padding:0 13px 13px; display:flex; flex-wrap:wrap; gap:7px}
+  .cchips .ex{font-size:.74rem}
+  .cmsgs::-webkit-scrollbar,#codeBox::-webkit-scrollbar,#consoleBox::-webkit-scrollbar,.rpanel::-webkit-scrollbar{width:8px}
+  .cmsgs::-webkit-scrollbar-thumb,#codeBox::-webkit-scrollbar-thumb,#consoleBox::-webkit-scrollbar-thumb,.rpanel::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12); border-radius:8px}
+  @media (prefers-reduced-motion:reduce){ #fab,.pill::before{animation:none} }
+</style>
+</head>
+<body>
+<canvas id="neb"></canvas>
+<canvas id="uni"></canvas>
+
+<!-- ============ LANDING ============ -->
+<div id="landing">
+  <nav class="lnav"><div class="navin">
+    <a class="brand" href="#top">🪐 NovaSites</a>
+    <span class="sp"></span>
+    <div class="navlinks">
+      <a href="#features" data-i18n="nFeat"></a>
+      <a href="#agents" data-i18n="nAgents"></a>
+      <a href="#how" data-i18n="nHow"></a>
+      <a href="#pricing" data-i18n="nPrice"></a>
+      <a href="#faq">FAQ</a>
+      <button class="icob" id="langL">EN</button>
+      <button class="btn p sm" id="navSign" data-i18n="signG"></button>
+    </div>
+  </div></nav>
+
+  <section class="lsec hero1" id="top">
+    <span class="pill" data-i18n="pill"></span>
+    <h1 class="big" id="heroH"></h1>
+    <p class="lsub" data-i18n="lsub"></p>
+    <div class="ctarow">
+      <button class="btn p" id="getStarted" data-i18n="getStart"></button>
+      <button class="gbtn" id="gSign">
+        <svg width="19" height="19" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.7 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.2C.9 16.1 0 19.9 0 24s.9 7.9 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.6l-7.7-6c-2.1 1.4-4.8 2.3-7.5 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
+        <span data-i18n="signG"></span>
+      </button>
+    </div>
+  </section>
+
+  <section class="lsec" id="features">
+    <span class="kick">✦ <span data-i18n="nFeat"></span></span>
+    <h2 class="sec" data-i18n="featT"></h2>
+    <p class="secsub" data-i18n="featS"></p>
+    <div class="grid3">
+      <div class="gcard"><div class="gi">⚡</div><h3 data-i18n="f1t"></h3><p data-i18n="f1d"></p></div>
+      <div class="gcard"><div class="gi">👁️</div><h3 data-i18n="f2t"></h3><p data-i18n="f2d"></p></div>
+      <div class="gcard"><div class="gi">🤖</div><h3 data-i18n="f3t"></h3><p data-i18n="f3d"></p></div>
+      <div class="gcard"><div class="gi">💬</div><h3 data-i18n="f4t"></h3><p data-i18n="f4d"></p></div>
+      <div class="gcard"><div class="gi">📱</div><h3 data-i18n="f5t"></h3><p data-i18n="f5d"></p></div>
+      <div class="gcard"><div class="gi">⬇️</div><h3 data-i18n="f6t"></h3><p data-i18n="f6d"></p></div>
+    </div>
+  </section>
+
+  <section class="lsec" id="agents">
+    <span class="kick">✦ <span data-i18n="nAgents"></span></span>
+    <h2 class="sec" data-i18n="agT"></h2>
+    <p class="secsub" data-i18n="agS"></p>
+    <div class="grid4" id="agentCards"></div>
+  </section>
+
+  <section class="lsec" id="how">
+    <span class="kick">✦ <span data-i18n="nHow"></span></span>
+    <h2 class="sec" data-i18n="howT"></h2>
+    <p class="secsub" data-i18n="howS"></p>
+    <div class="steps">
+      <div class="step"><h4 data-i18n="h1t"></h4><p data-i18n="h1d"></p></div>
+      <div class="step"><h4 data-i18n="h2t"></h4><p data-i18n="h2d"></p></div>
+      <div class="step"><h4 data-i18n="h3t"></h4><p data-i18n="h3d"></p></div>
+      <div class="step"><h4 data-i18n="h4t"></h4><p data-i18n="h4d"></p></div>
+    </div>
+  </section>
+
+  <section class="lsec" id="pricing">
+    <span class="kick">✦ <span data-i18n="nPrice"></span></span>
+    <h2 class="sec" data-i18n="prT"></h2>
+    <p class="secsub" data-i18n="prS"></p>
+    <div class="prices">
+      <div class="price"><span data-i18n="p1n"></span><b>₹0</b><ul><li data-i18n="p1a"></li><li data-i18n="p1b"></li><li data-i18n="p1c"></li></ul><button class="btn g" data-goto data-i18n="getStart"></button></div>
+      <div class="price hot"><span data-i18n="p2n"></span><b>₹499</b><ul><li data-i18n="p2a"></li><li data-i18n="p2b"></li><li data-i18n="p2c"></li></ul><button class="btn p" data-goto data-i18n="getStart"></button></div>
+      <div class="price"><span data-i18n="p3n"></span><b>₹1999</b><ul><li data-i18n="p3a"></li><li data-i18n="p3b"></li><li data-i18n="p3c"></li></ul><button class="btn g" data-goto data-i18n="getStart"></button></div>
+    </div>
+  </section>
+
+  <section class="lsec" id="faq" style="max-width:760px">
+    <span class="kick">✦ FAQ</span>
+    <h2 class="sec" data-i18n="fqT"></h2>
+    <details class="faq"><summary data-i18n="q1"></summary><p data-i18n="a1"></p></details>
+    <details class="faq"><summary data-i18n="q2"></summary><p data-i18n="a2"></p></details>
+    <details class="faq"><summary data-i18n="q3"></summary><p data-i18n="a3"></p></details>
+    <details class="faq"><summary data-i18n="q4"></summary><p data-i18n="a4"></p></details>
+  </section>
+
+  <footer class="lf">🪐 <b>NovaSites</b> · <span data-i18n="foot"></span></footer>
+</div>
+
+<!-- ============ GOOGLE-STYLE SIGN IN (demo) ============ -->
+<div id="gmodal" class="gmodal" hidden>
+  <div class="gcardm">
+    <button class="gx" id="gClose">✕</button>
+    <div class="glogo"><svg width="30" height="30" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.7 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.3l7.9 6.2C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.3 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.6c-.5-1.5-.8-3-.8-4.6s.3-3.1.8-4.6l-7.9-6.2C.9 16.1 0 19.9 0 24s.9 7.9 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.2-5.6l-7.7-6c-2.1 1.4-4.8 2.3-7.5 2.3-6.3 0-11.6-4.1-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg></div>
+    <h3 data-i18n="gT"></h3>
+    <p class="gsub">NovaSites <span data-i18n="gS"></span></p>
+    <div id="gAccts"></div>
+    <div id="gNew">
+      <input class="ginp" id="gName" data-i18n-ph="gNm" maxlength="30">
+      <input class="ginp" id="gEmail" type="email" placeholder="you@gmail.com" maxlength="50">
+      <button class="gcont" id="gGo" data-i18n="gGo2"></button>
+    </div>
+    <p class="gnote" data-i18n="gNote"></p>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dash" hidden>
+  <div class="dtop">
+    <a class="brand" href="#" onclick="return false"><span class="bico" style="width:32px;height:32px;font-size:.95rem">🪐</span> NovaSites</a>
+    <span class="sp"></span>
+    <button class="icob" id="langD">EN</button>
+    <div class="uchip" id="uchip" title="">
+      <div class="uav" id="uav">V</div>
+      <div><span class="un" id="un"></span><span class="ue" id="ue"></span></div>
+    </div>
+    <button class="icob" id="outBtn" data-i18n="logout"></button>
+  </div>
+
+  <div class="dmain">
+    <!-- LEFT: live builder -->
+    <div class="lpanel">
+      <div class="ltools">
+        <div class="tabs2">
+          <button class="tb on" data-tab="frame" data-i18n="tPrev"></button>
+          <button class="tb" data-tab="codeBox" data-i18n="tCode"></button>
+          <button class="tb" data-tab="consoleBox" data-i18n="tCons"></button>
+          <button class="tb" data-tab="histBox" data-i18n="tHist"></button>
+        </div>
+        <div class="lbar">
+          <button class="icob" id="dlBtn" data-i18n="dl" disabled>⬇️</button>
+          <button class="icob" id="openBtn" title="Open in new tab" disabled>↗</button>
+          <button class="icob" id="copyBtn" title="Copy code" disabled>⧉</button>
+          <button class="icob" id="fsBtn" title="Fullscreen">⛶</button>
+        </div>
+        <div class="devs">
+          <button class="dv on" data-w="100%">🖥️</button>
+          <button class="dv" data-w="768px">📱▭</button>
+          <button class="dv" data-w="390px">📱</button>
+        </div>
+      </div>
+      <div class="stage">
+        <div class="frameWrap" id="frameWrap">
+          <div class="fhead">
+            <span class="fd" style="background:#f87171"></span><span class="fd" style="background:#fbbf24"></span><span class="fd" style="background:#34d399"></span>
+            <span class="furl" id="furl">novasites.preview/…</span>
+          </div>
+          <iframe id="frame" title="Website preview"></iframe>
+          <div id="codeBox" hidden></div>
+          <div id="consoleBox" hidden></div>
+          <div id="histBox" hidden style="font-family:'Segoe UI',sans-serif"></div>
+        </div>
+        <div id="buildOv" hidden>
+          <div class="bsteps">
+            <h3>🛠️ <span data-i18n="building"></span></h3>
+            <div id="bstepList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: prompt + agents -->
+    <div class="rpanel">
+      <div class="rp">
+        <h3>✨ <span data-i18n="rpT"></span></h3>
+        <textarea id="prompt" data-i18n-ph="rpPh"></textarea>
+        <div class="exrow" id="exRow"></div>
+        <div class="genrow">
+          <button class="btn p" id="genBtn" data-i18n="genB"></button>
+          <button class="btn g" id="regenBtn" data-i18n="regenB" disabled>🔁</button>
+        </div>
+      </div>
+      <div class="rp">
+        <h3>🧩 <span data-i18n="qaT"></span></h3>
+        <div class="qacts">
+          <button class="icob" id="qaSection" data-i18n="qa1" disabled></button>
+          <button class="icob" id="qaTheme" data-i18n="qa2" disabled></button>
+          <button class="icob" id="qaColor" data-i18n="qa3" disabled></button>
+        </div>
+      </div>
+      <div class="rp">
+        <h3>🤖 <span data-i18n="agPanel"></span> <span style="margin-inline-start:auto;font-size:.68rem;color:var(--cyan);border:1px solid rgba(34,211,238,.4);border-radius:999px;padding:2px 10px" data-i18n="autoMode"></span></h3>
+        <div class="agents" id="agentList"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- floating chat -->
+  <button id="fab" title="AI Assistant">🤖<span class="ndot" id="ndot"></span></button>
+  <div id="chatPanel">
+    <div class="chead">
+      <div class="cavatar">🤖</div>
+      <div><b>Nova AI</b><span class="cs" id="chatMode"></span></div>
+      <button class="cx" id="chatClear" title="Clear">🗑</button>
+      <button class="cx" id="chatClose">✕</button>
+    </div>
+    <div class="cmsgs" id="cmsgs"></div>
+    <div class="cin2row">
+      <input id="cin2" autocomplete="off" data-i18n-ph="chPh">
+      <button class="btn p sm" id="csend2" data-i18n="send"></button>
+    </div>
+    <div class="cchips" id="cchips"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+/* ================= NovaSites MVP — built with Claude (AI). Single file. =================
+   NOTE (real Google OAuth): is MVP mein sign-in demo hai. Asli Google login ke liye:
+   1) console.cloud.google.com par OAuth Client ID banao  2) Firebase/Auth.js jodo
+   3) GOOGLE_CLIENT_ID env var + redirect URI set karo — iske liye server/hosting zaroori hai. */
+
+const T = {
+hi:{
+  langBtn:"EN", nFeat:"फीचर्स", nAgents:"AI एजेंट्स", nHow:"कैसे काम करता है", nPrice:"प्राइसिंग",
+  signG:"Google से साइन इन करें", pill:"AI-पावर्ड वेबसाइट जेनरेटर",
+  heroH:"वेब पर बनाइए <em>अपना यूनिवर्स</em>",
+  lsub:"अपना आइडिया लिखिए — और AI एजेंट्स आपकी वेबसाइट डिज़ाइन, कोड और लॉन्च कर देंगे। आँखों के सामने बनती हुई।",
+  getStart:"शुरू करें",
+  featT:"एक प्रॉम्प्ट। पूरी वेबसाइट।", featS:"NovaSites में वो सब है जो एक साइट बनाने के लिए चाहिए —",
+  f1t:"तुरंत जेनरेशन", f1d:"बस लिखो कैसी साइट चाहिए — कुछ ही सेकंड में तैयार।",
+  f2t:"लाइव बनते देखो", f2d:"हर सेक्शन आपकी आँखों के सामने एक-एक करके बनता है।",
+  f3t:"10 AI एजेंट्स", f3d:"प्लानर से डिप्लॉय तक — हर काम का अपना विशेषज्ञ एजेंट।",
+  f4t:"फ्लोटिंग AI चैट", f4d:"नीचे दाएँ कोने का रोबोट — बोलो 'color बदलो' और हो गया।",
+  f5t:"हर स्क्रीन पर परफेक्ट", f5d:"Desktop, tablet, mobile — तीनों preview modes।",
+  f6t:"कोड डाउनलोड", f6d:"पूरी HTML फ़ाइल डाउनलोड करो — कहीं भी host करो।",
+  agT:"आपकी AI टीम", agS:"10 विशेषज्ञ एजेंट्स जो मिलकर आपकी साइट बनाते हैं —",
+  howT:"4 आसान स्टेप", howS:"आइडिया से वेबसाइट तक का सफ़र —",
+  h1t:"साइन इन करो", h1d:"Google अकाउंट से एक क्लिक में अंदर आओ।",
+  h2t:"आइडिया लिखो", h2d:"जैसे: 'एक कैफ़े की डार्क वेबसाइट बनाओ'।",
+  h3t:"AI को बनते देखो", h3d:"एजेंट्स प्लान, डिज़ाइन और कोड करते हैं — लाइव।",
+  h4t:"एडिट + डाउनलोड", h4d:"चैट से बदलाव करवाओ, फिर HTML डाउनलोड।",
+  prT:"सीधी-सादी प्राइसिंग", prS:"(डेमो) — MVP में सब कुछ फ्री है!",
+  p1n:"फ्री", p1a:"3 साइट/दिन", p1b:"सभी टेम्पलेट", p1c:"HTML डाउनलोड",
+  p2n:"प्रो", p2a:"अनलिमिटेड साइट्स", p2b:"रियल AI मोड", p2c:"प्रायोरिटी एजेंट्स",
+  p3n:"अल्ट्रा", p3a:"कस्टम डोमेन", p3b:"टीम एक्सेस", p3c:"24×7 सपोर्ट",
+  fqT:"अक्सर पूछे जाने वाले सवाल",
+  q1:"क्या यह सच में वेबसाइट बनाता है?", a1:"हाँ! Offline मोड में स्मार्ट टेम्पलेट इंजन से — और API key जोड़ने पर असली Claude AI हर तरह की साइट बनाता है। दोनों में पूरी HTML फ़ाइल डाउनलोड होती है।",
+  q2:"क्या Google साइन इन असली है?", a2:"यह MVP है, इसलिए साइन इन डेमो है (Google जैसा popup)। असली Google OAuth के लिए server और Google Cloud setup चाहिए — इसके निर्देश कोड के अंदर comment में हैं।",
+  q3:"बनी हुई साइट host कहाँ करें?", a3:"HTML डाउनलोड करके Netlify Drop, Vercel या GitHub Pages पर मुफ़्त में host कर सकते हो — फ़ाइल drag-drop करते ही लाइव।",
+  q4:"क्या API key ज़रूरी है?", a4:"नहीं — बिना key के भी साइट्स बनती हैं। Key जोड़ने पर असली AI किसी भी तरह की custom साइट बना देता है।",
+  foot:"वेदांत + Claude AI ने मिलकर बनाया · 2026",
+  gT:"साइन इन करें", gS:"पर जाने के लिए अकाउंट चुनें", gNm:"आपका नाम", gGo2:"जारी रखें",
+  gNote:"डेमो साइन-इन — असली Google OAuth के लिए server setup चाहिए। आपका नाम सिर्फ़ आपके browser में रहता है।",
+  logout:"लॉग आउट",
+  tPrev:"लाइव प्रीव्यू", tCode:"कोड", tCons:"कंसोल", tHist:"हिस्ट्री", dl:"डाउनलोड", building:"AI आपकी साइट बना रहा है…",
+  rpT:"साइट जेनरेटर", rpPh:"बताइए कैसी वेबसाइट चाहिए… जैसे: एक ग्राफिक डिज़ाइनर का डार्क पोर्टफोलियो, एनीमेशन के साथ",
+  genB:"⚡ वेबसाइट बनाओ", regenB:"फिर से",
+  qaT:"क्विक एक्शन", qa1:"➕ सेक्शन जोड़ो", qa2:"🌗 थीम बदलो", qa3:"🎨 रंग बदलो",
+  agPanel:"AI एजेंट्स", autoMode:"AUTO MODE",
+  aiT:"असली AI जोड़ें (optional)",
+  aiNote:"Anthropic API key डालने पर साइट्स असली Claude AI बनाएगा और चैट हर सवाल का जवाब देगी। Key सिर्फ़ आपके browser में रहती है — API के पैसे लगते हैं, किसी से share न करें।",
+  aiSave:"सेव करें",
+  chPh:"कमांड लिखो… जैसे: hero का रंग नीला करो", send:"भेजो",
+  modeLive:"🧠 CLAUDE · LIVE", modeOff:"🤖 NOVA · OFFLINE",
+  stIdle:"तैयार", stWork:"काम जारी…", stDone:"पूरा ✓",
+  noSite:"अभी कोई साइट जेनरेट नहीं हुई — पहले prompt लिखकर 'वेबसाइट बनाओ' दबाओ।",
+  noHist:"अभी कोई हिस्ट्री नहीं — पहली साइट बनाओ!", restore:"वापस लाओ", restored:"वर्ज़न restore हो गया:",
+  examples:["कैफ़े की डार्क वेबसाइट","फोटोग्राफर का पोर्टफोलियो","शादी का निमंत्रण","मोबाइल की दुकान"],
+  cchips:["रंग नीला करो","गैलरी जोड़ो","light theme करो","एनीमेशन कम करो","publish करो","मदद"],
+  chSeed:"नमस्ते {n}! 🪐 मैं Nova AI हूँ। बाएँ prompt में लिखो कैसी साइट चाहिए — मैं एजेंट्स के साथ बना दूँगा। बनने के बाद मुझसे बदलाव करवाओ: 'रंग लाल करो', 'फॉर्म जोड़ो', 'publish करो'…",
+  bsteps:["स्ट्रक्चर की प्लानिंग","डिज़ाइन सिस्टम तैयार","कॉन्टेंट लिखा जा रहा है","नेविगेशन बन रहा है","हीरो सेक्शन डिज़ाइन","सेक्शन जुड़ रहे हैं","एनीमेशन लग रहे हैं","SEO ऑप्टिमाइज़ेशन","मोबाइल + एक्सेसिबिलिटी","टेस्टिंग और फिनिशिंग"],
+  blogs:["प्रॉम्प्ट समझा — पेज स्ट्रक्चर प्लान किया","रंग, फॉन्ट और स्पेसिंग चुने गए","हेडिंग्स और टेक्स्ट तैयार","नेविगेशन बार कोड की गई","हीरो सेक्शन रेंडर हुआ","बाकी सेक्शन जोड़े गए","स्मूद एनीमेशन लगाए गए","meta title/description सेट","सभी स्क्रीन साइज़ ✓ · कंट्रास्ट ✓","0 errors — साइट तैयार!"],
+  genStart:"जेनरेशन शुरू:", genDone:"वेबसाइट तैयार!",
+  liveTry:"असली Claude AI से साइट बनवाई जा रही है…", liveOk:"Claude AI ने कस्टम साइट बना दी!",
+  liveFail:"Live AI नहीं चला, offline इंजन से बना रहा हूँ —", liveFailChat:"असली AI से नहीं बन पाया (key/internet चेक करो) — offline इंजन से बना दिया।",
+  agPlanner:"Planner", agDesigner:"Designer", agWriter:"Writer", agFrontend:"Frontend", agAnimator:"Animation", agSeo:"SEO", agA11y:"A11y", agDebug:"Debug", agMobile:"Mobile", agDeploy:"Deploy",
+  dlLog:"HTML फ़ाइल एक्सपोर्ट हो गई", qaAddLog:"नया सेक्शन जुड़ गया", qaThemeLog:"थीम बदल दी गई", qaColorLog:"नया accent रंग:",
+  qaFull:"सभी सेक्शन पहले से मौजूद हैं! 😄",
+  chDone:'"{n}" तैयार है! अब मुझसे बदलाव करवाओ — जैसे "रंग हरा करो" या "गैलरी जोड़ो"। Download बटन (⬇️) से HTML ले लो।',
+  cColor:"रंग बदल दिया! प्रीव्यू देखो।", cDark:"डार्क थीम लगा दी!", cLight:"लाइट थीम लगा दी!",
+  cForm:"कॉन्टैक्ट फॉर्म जोड़ दिया!", cGal:"गैलरी सेक्शन जुड़ गया!", cTesti:"टेस्टिमोनियल्स जुड़ गए!",
+  cAnim:"एनीमेशन हटा दिए — अब साइट बिल्कुल शांत है।", cProf:"ज़्यादा प्रोफेशनल लुक लगा दिया!",
+  cPub:"Publish (MVP): HTML फ़ाइल डाउनलोड हो गई — इसे Netlify Drop पर drag करो, साइट लाइव! असली one-click publish के लिए server चाहिए।",
+  cDl:"HTML डाउनलोड हो गई!", cNeed:"पहले एक साइट बनाओ — बाएँ prompt लिखकर 'वेबसाइट बनाओ' दबाओ।",
+  cRebuild:"ठीक है, दोबारा बना रहा हूँ…",
+  cHelp:"मैं ये कर सकता हूँ:\n🎨 'रंग नीला/लाल/हरा करो'\n🌗 'dark/light theme'\n➕ 'फॉर्म/गैलरी/टेस्टिमोनियल जोड़ो'\n🎞️ 'एनीमेशन कम करो'\n🚀 'publish करो' · ⬇️ 'download'\n🔁 'दोबारा बनाओ'\n…और API key जोड़ो तो कुछ भी!",
+  cHi:"बोलो, साइट में क्या बदलूँ? 'मदद' लिखो तो पूरी लिस्ट दिखाऊँ।",
+  cUnknown:"यह कमांड अभी offline मोड में नहीं है 😅 'मदद' लिखो — या ऊपर 🔑 'API Key' बटन से key जोड़ो, फिर कुछ भी बोल सकते हो।",
+  cApplied:"हो गया — नई साइट प्रीव्यू में लगा दी!", cAppliedLog:"Claude AI का नया कोड प्रीव्यू में लागू",
+  errLive:"AI से जवाब नहीं मिला — key और internet चेक करो।",
+  aiOn:"✅ असली AI जुड़ गया! अब साइट जेनरेशन और चैट दोनों Claude से चलेंगे।", aiOff:"Key हटी — offline मोड में वापस।"
+},
+en:{
+  langBtn:"हिंदी", nFeat:"Features", nAgents:"AI Agents", nHow:"How it works", nPrice:"Pricing",
+  signG:"Sign in with Google", pill:"AI-powered website generator",
+  heroH:"Build Your <em>Universe</em> on the Web",
+  lsub:"Describe your idea and let AI agents design, code and launch your website — right before your eyes.",
+  getStart:"Get Started",
+  featT:"One prompt. A whole website.", featS:"Everything you need to go from idea to live site —",
+  f1t:"Instant generation", f1d:"Just describe the site you want — ready in seconds.",
+  f2t:"Watch it build live", f2d:"Every section renders one by one, right in front of you.",
+  f3t:"10 AI agents", f3d:"From Planner to Deploy — a specialist for every job.",
+  f4t:"Floating AI chat", f4d:"The robot in the corner — say 'change the color' and it's done.",
+  f5t:"Perfect on every screen", f5d:"Desktop, tablet and mobile preview modes.",
+  f6t:"Download the code", f6d:"Get the full HTML file — host it anywhere.",
+  agT:"Your AI team", agS:"10 specialised agents that build your site together —",
+  howT:"4 simple steps", howS:"From idea to website —",
+  h1t:"Sign in", h1d:"One click with your Google account.",
+  h2t:"Describe your idea", h2d:"e.g., 'A dark website for a café'.",
+  h3t:"Watch AI build it", h3d:"Agents plan, design and code — live.",
+  h4t:"Edit + download", h4d:"Refine via chat, then download the HTML.",
+  prT:"Simple pricing", prS:"(Demo) — everything is free in the MVP!",
+  p1n:"Free", p1a:"3 sites/day", p1b:"All templates", p1c:"HTML download",
+  p2n:"Pro", p2a:"Unlimited sites", p2b:"Real AI mode", p2c:"Priority agents",
+  p3n:"Ultra", p3a:"Custom domain", p3b:"Team access", p3c:"24×7 support",
+  fqT:"Frequently asked questions",
+  q1:"Does it really build websites?", a1:"Yes! Offline it uses a smart template engine — and with an API key, real Claude AI builds any kind of site. Both give you a full downloadable HTML file.",
+  q2:"Is the Google sign-in real?", a2:"This is an MVP, so sign-in is a demo (Google-style popup). Real Google OAuth needs a server and Google Cloud setup — instructions are in a comment inside the code.",
+  q3:"Where do I host my site?", a3:"Download the HTML and host it free on Netlify Drop, Vercel or GitHub Pages — drag, drop, live.",
+  q4:"Do I need an API key?", a4:"No — sites generate without one. Adding a key lets real AI build fully custom sites.",
+  foot:"Built by Vedant + Claude AI · 2026",
+  gT:"Sign in", gS:"to continue to NovaSites", gNm:"Your name", gGo2:"Continue",
+  gNote:"Demo sign-in — real Google OAuth requires a server setup. Your name stays in your browser only.",
+  logout:"Log out",
+  tPrev:"Live Preview", tCode:"Code", tCons:"Console", tHist:"History", dl:"Download", building:"AI is building your site…",
+  rpT:"Site Generator", rpPh:"Describe the website you want… e.g., A dark portfolio for a graphic designer, with animations",
+  genB:"⚡ Generate Website", regenB:"Again",
+  qaT:"Quick actions", qa1:"➕ Add section", qa2:"🌗 Toggle theme", qa3:"🎨 Change color",
+  agPanel:"AI Agents", autoMode:"AUTO MODE",
+  aiT:"Connect real AI (optional)",
+  aiNote:"Paste an Anthropic API key and real Claude AI will generate sites and answer anything in chat. The key stays in your browser — API usage costs money; never share it.",
+  aiSave:"Save",
+  chPh:"Type a command… e.g., make the hero blue", send:"Send",
+  modeLive:"🧠 CLAUDE · LIVE", modeOff:"🤖 NOVA · OFFLINE",
+  stIdle:"Ready", stWork:"Working…", stDone:"Done ✓",
+  noSite:"No site generated yet — write a prompt and hit 'Generate Website'.",
+  noHist:"No history yet — build your first site!", restore:"Restore", restored:"Version restored:",
+  examples:["Dark website for a café","Photographer portfolio","Wedding invitation","Mobile phone shop"],
+  cchips:["make it blue","add a gallery","light theme","reduce animations","publish","help"],
+  chSeed:"Hi {n}! 🪐 I'm Nova AI. Describe your site in the prompt on the left — I'll build it with the agents. Afterwards, ask me for changes: 'make it red', 'add a form', 'publish'…",
+  bsteps:["Planning structure","Preparing design system","Writing content","Creating navigation","Designing hero section","Adding sections","Adding animations","SEO optimization","Mobile + accessibility","Testing & finishing"],
+  blogs:["Prompt understood — page structure planned","Colors, fonts and spacing chosen","Headings and copy prepared","Navigation bar coded","Hero section rendered","Remaining sections added","Smooth animations applied","Meta title/description set","All screen sizes ✓ · contrast ✓","0 errors — site ready!"],
+  genStart:"Generation started:", genDone:"Website ready!",
+  liveTry:"Asking real Claude AI to build the site…", liveOk:"Claude AI built a custom site!",
+  liveFail:"Live AI unavailable, using offline engine —", liveFailChat:"Couldn't build with real AI (check key/internet) — built with the offline engine instead.",
+  agPlanner:"Planner", agDesigner:"Designer", agWriter:"Writer", agFrontend:"Frontend", agAnimator:"Animation", agSeo:"SEO", agA11y:"A11y", agDebug:"Debug", agMobile:"Mobile", agDeploy:"Deploy",
+  dlLog:"HTML file exported", qaAddLog:"New section added", qaThemeLog:"Theme toggled", qaColorLog:"New accent color:",
+  qaFull:"All sections already added! 😄",
+  chDone:'"{n}" is ready! Now ask me for changes — like "make it green" or "add a gallery". Grab the HTML with the ⬇️ button.',
+  cColor:"Color changed! Check the preview.", cDark:"Dark theme applied!", cLight:"Light theme applied!",
+  cForm:"Contact form added!", cGal:"Gallery section added!", cTesti:"Testimonials added!",
+  cAnim:"Animations removed — nice and calm now.", cProf:"Applied a more professional look!",
+  cPub:"Publish (MVP): your HTML just downloaded — drag it onto Netlify Drop and it's live! Real one-click publishing needs a server.",
+  cDl:"HTML downloaded!", cNeed:"Generate a site first — write a prompt on the left and hit 'Generate Website'.",
+  cRebuild:"Okay, rebuilding…",
+  cHelp:"Here's what I can do:\n🎨 'make it blue/red/green'\n🌗 'dark/light theme'\n➕ 'add a form/gallery/testimonials'\n🎞️ 'reduce animations'\n🚀 'publish' · ⬇️ 'download'\n🔁 'rebuild'\n…and with an API key: anything!",
+  cHi:"Tell me what to change on your site! Type 'help' for the full list.",
+  cUnknown:"That command isn't in offline mode yet 😅 Type 'help' — or add a key via the 🔑 'API Key' button on top and ask me anything.",
+  cApplied:"Done — the new site is live in the preview!", cAppliedLog:"Claude AI's new code applied to preview",
+  errLive:"No answer from the AI — check your key and internet.",
+  aiOn:"✅ Real AI connected! Site generation and chat now run on Claude.", aiOff:"Key removed — back to offline mode."
+}
+};
+const AGENTS = [
+ {id:'planner',  icon:'🧭', hi:'प्लानर एजेंट',        en:'Planner Agent',        r_hi:'पेज और सेक्शन की योजना',        r_en:'Plans pages & structure'},
+ {id:'designer', icon:'🎨', hi:'UI/UX डिज़ाइनर',      en:'UI/UX Designer',       r_hi:'रंग, फॉन्ट, लेआउट',             r_en:'Colors, fonts, layout'},
+ {id:'writer',   icon:'✍️', hi:'कॉन्टेंट राइटर',      en:'Content Writer',       r_hi:'हेडिंग्स और टेक्स्ट',           r_en:'Headings & copy'},
+ {id:'frontend', icon:'💻', hi:'फ्रंटएंड डेवलपर',     en:'Frontend Developer',   r_hi:'HTML/CSS/JS कोड',               r_en:'Generates the code'},
+ {id:'animator', icon:'🎞️', hi:'एनीमेशन एजेंट',      en:'Animation Agent',      r_hi:'स्मूद इफेक्ट्स',                r_en:'Smooth effects'},
+ {id:'seo',      icon:'🔍', hi:'SEO एजेंट',           en:'SEO Agent',            r_hi:'meta और कीवर्ड्स',              r_en:'Meta & keywords'},
+ {id:'a11y',     icon:'♿', hi:'एक्सेसिबिलिटी एजेंट', en:'Accessibility Agent',  r_hi:'सबके लिए उपयोगी',               r_en:'Usable for everyone'},
+ {id:'debug',    icon:'🐞', hi:'डीबगिंग एजेंट',       en:'Debugging Agent',      r_hi:'गलतियाँ ढूँढे-सुधारे',          r_en:'Finds & fixes errors'},
+ {id:'mobile',   icon:'📱', hi:'मोबाइल एजेंट',        en:'Mobile Agent',         r_hi:'हर स्क्रीन पर फिट',             r_en:'Fits every screen'},
+ {id:'deploy',   icon:'🚀', hi:'डिप्लॉय एजेंट',       en:'Deployment Agent',     r_hi:'एक्सपोर्ट और पब्लिश',           r_en:'Export & publish'}
+];
+
+const $ = s => document.querySelector(s);
+let lang = 'en'; /* always opens in English; हिंदी toggle available in the nav */
+
+/* ---------- state ---------- */
+let user = null, memUser = null;
+try{ const v = localStorage.getItem('nv-user'); user = v ? JSON.parse(v) : null; }catch(e){ user = memUser; }
+function saveUser(u){ user = u; memUser = u; try{ u ? localStorage.setItem('nv-user', JSON.stringify(u)) : localStorage.removeItem('nv-user'); }catch(e){} }
+let aiKey = 'server', aiModel = 'claude-sonnet-5'; /* AI runs via /api/claude — key server par hai */
+async function claudeAPI(payload){
+  const res = await fetch('/api/claude', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(Object.assign({model:aiModel}, payload))});
+  const data = await res.json().catch(() => ({}));
+  if(!res.ok) throw new Error((data && data.error && data.error.message) || ('HTTP ' + res.status));
+  return data;
+}
+let cfg = null, siteHTML = '', building = false, history = [], chatHist = [];
+
+/* ---------- i18n ---------- */
+function applyLang(l){
+  lang = l;
+  document.documentElement.lang = l;
+  const t = T[l];
+  document.querySelectorAll('[data-i18n]').forEach(el => { el.textContent = t[el.dataset.i18n]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { el.placeholder = t[el.dataset.i18nPh]; });
+  $('#heroH').innerHTML = t.heroH;
+  $('#langL').textContent = t.langBtn; $('#langD').textContent = t.langBtn;
+  $('#chatMode').textContent = aiKey ? t.modeLive : t.modeOff;
+  buildAgentCards(); buildAgentList(); buildEx(); buildChatChips();
+  try{ localStorage.setItem('nv-lang', l); }catch(e){}
+}
+
+/* ---------- universe background ---------- */
+(function(){
+  const cv = $('#neb'), ctx = cv.getContext('2d');
+  function paint(){
+    const dpr = Math.min(devicePixelRatio||1,2), W = innerWidth, H = innerHeight;
+    cv.width = W*dpr; cv.height = H*dpr; cv.style.width = W+'px'; cv.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,W,H);
+    let s = 7; const rnd = () => { s = (s*16807)%2147483647; return s/2147483647; };
+    function blob(x,y,r,rgb,a){ const g = ctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,'rgba('+rgb+','+a+')'); g.addColorStop(1,'rgba('+rgb+',0)'); ctx.fillStyle = g; ctx.fillRect(x-r,y-r,r*2,r*2); }
+    for(let i=0;i<8;i++) blob(rnd()*W, rnd()*H, 160+rnd()*260, '99,60,240', .05+rnd()*.05);
+    for(let i=0;i<6;i++) blob(rnd()*W, rnd()*H, 140+rnd()*220, '11,40,120', .06+rnd()*.05);
+    for(let i=0;i<4;i++) blob(rnd()*W, rnd()*H, 120+rnd()*180, '20,180,220', .03+rnd()*.03);
+  }
+  addEventListener('resize', paint); paint();
+})();
+(function(){
+  const cv = $('#uni'), ctx = cv.getContext('2d');
+  let W,H,stars=[],shots=[],gal=[],mx=0,my=0;
+  function size(){
+    const dpr = Math.min(devicePixelRatio||1,2);
+    W = innerWidth; H = innerHeight;
+    cv.width = W*dpr; cv.height = H*dpr; cv.style.width = W+'px'; cv.style.height = H+'px';
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    stars = []; gal = [];
+    const n = Math.min(230, Math.floor(W*H/5200));
+    for(let i=0;i<n;i++) stars.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.3+.3, b:Math.random()*.55+.2, p:Math.random()*6.28, s:Math.random()*.02+.005, L:Math.random()*2+1, c:Math.random()<.7?'#ffffff':(Math.random()<.5?'#cfe0ff':'#ffe3b8')});
+    /* two slow galaxies (spiral particle rings) */
+    for(let g=0; g<2; g++){
+      const cx0 = (g? .82:.16)*W, cy0 = (g? .2:.72)*H, R = 60+g*30, pts = [];
+      for(let i=0;i<110;i++){ const a = Math.random()*6.28, rr = Math.pow(Math.random(),.5)*R; pts.push({a, rr:rr*(1+.35*Math.sin(a*2)), sz:Math.random()*1.1+.3, al:.12+Math.random()*.3}); }
+      gal.push({cx0, cy0, pts, rot:0, sp:(g? -.0009: .0007), hue:g?'34,211,238':'167,139,250'});
+    }
+  }
+  addEventListener('resize', size); size();
+  addEventListener('mousemove', e => { mx = e.clientX/W-.5; my = e.clientY/H-.5; });
+  let nextShot = 200;
+  (function frame(){
+    ctx.clearRect(0,0,W,H);
+    for(const g of gal){
+      g.rot += g.sp;
+      const gx = g.cx0 - mx*22, gy = g.cy0 - my*22;
+      for(const p of g.pts){
+        const a = p.a + g.rot;
+        ctx.globalAlpha = p.al;
+        ctx.fillStyle = 'rgba(' + g.hue + ',1)';
+        ctx.beginPath(); ctx.arc(gx + Math.cos(a)*p.rr, gy + Math.sin(a)*p.rr*.45, p.sz, 0, 7); ctx.fill();
+      }
+    }
+    for(const st of stars){
+      st.p += st.s;
+      ctx.globalAlpha = st.b*(0.55+0.45*Math.sin(st.p));
+      ctx.fillStyle = st.c;
+      ctx.beginPath(); ctx.arc(st.x - mx*16*st.L, st.y - my*16*st.L, st.r, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    if(--nextShot <= 0){ nextShot = 260+Math.random()*420;
+      shots.push({x:Math.random()*W*.8, y:Math.random()*H*.35, vx:7+Math.random()*5, vy:3+Math.random()*2.5, life:1}); }
+    for(let i=shots.length-1;i>=0;i--){
+      const sh = shots[i]; sh.x += sh.vx; sh.y += sh.vy; sh.life -= .022;
+      if(sh.life <= 0){ shots.splice(i,1); continue; }
+      const g2 = ctx.createLinearGradient(sh.x,sh.y,sh.x-sh.vx*9,sh.y-sh.vy*9);
+      g2.addColorStop(0,'rgba(255,255,255,'+(.85*sh.life)+')'); g2.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.strokeStyle = g2; ctx.lineWidth = 1.6;
+      ctx.beginPath(); ctx.moveTo(sh.x,sh.y); ctx.lineTo(sh.x-sh.vx*9, sh.y-sh.vy*9); ctx.stroke();
+    }
+    requestAnimationFrame(frame);
+  })();
+})();
+
+/* ---------- landing widgets ---------- */
+function buildAgentCards(){
+  const box = $('#agentCards'); if(!box) return; box.innerHTML = '';
+  AGENTS.forEach(a => {
+    const d = document.createElement('div');
+    d.className = 'gcard';
+    d.innerHTML = '<div class="gi">' + a.icon + '</div><h3></h3><p></p>';
+    d.querySelector('h3').textContent = a[lang];
+    d.querySelector('p').textContent = a['r_'+lang];
+    box.appendChild(d);
+  });
+}
+
+/* ---------- auth (demo google) ---------- */
+function openG(){
+  const t = T[lang], box = $('#gAccts'); box.innerHTML = '';
+  let saved = [];
+  try{ saved = JSON.parse(localStorage.getItem('nv-accts') || '[]'); }catch(e){}
+  saved.slice(0,3).forEach(a => {
+    const d = document.createElement('div');
+    d.className = 'gacct';
+    d.innerHTML = '<div class="gav"></div><div><div class="gn"></div><div class="ge"></div></div>';
+    d.querySelector('.gav').textContent = (a.name[0]||'?').toUpperCase();
+    d.querySelector('.gn').textContent = a.name;
+    d.querySelector('.ge').textContent = a.email;
+    d.addEventListener('click', () => finishSign(a));
+    box.appendChild(d);
+  });
+  $('#gmodal').hidden = false;
+  setTimeout(() => $('#gName').focus(), 80);
+}
+function finishSign(a){
+  saveUser(a);
+  try{
+    let saved = JSON.parse(localStorage.getItem('nv-accts') || '[]');
+    saved = [a].concat(saved.filter(x => x.email !== a.email)).slice(0,3);
+    localStorage.setItem('nv-accts', JSON.stringify(saved));
+  }catch(e){}
+  $('#gmodal').hidden = true;
+  refreshGate();
+}
+function refreshGate(){
+  $('#landing').hidden = !!user;
+  $('#dash').hidden = !user;
+  document.body.style.overflow = '';
+  if(user){
+    $('#uav').textContent = (user.name[0]||'?').toUpperCase();
+    $('#un').textContent = user.name;
+    $('#ue').textContent = user.email;
+    seedChat();
+  }
+}
+
+/* ---------- tabs / devices ---------- */
+function showTab(id){
+  ['frame','codeBox','consoleBox','histBox'].forEach(x => { $('#'+x).hidden = (x !== id); });
+  document.querySelectorAll('.tb').forEach(b => b.classList.toggle('on', b.dataset.tab === id));
+  if(id === 'histBox') renderHist();
+}
+
+/* ---------- console log ---------- */
+function clog(msg, cls, agent){
+  const box = $('#consoleBox');
+  const line = document.createElement('span');
+  line.className = 'cl ' + (cls||'inf');
+  const ts = new Date().toLocaleTimeString(lang==='hi'?'hi-IN':'en-IN',{hour12:false});
+  line.innerHTML = '<span style="color:#546e7a">[' + ts + ']</span> ' + (agent ? '<span class="ag">' + agent + '</span> ' : '');
+  line.appendChild(document.createTextNode(msg));
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ---------- code view ---------- */
+function esc2(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function renderCode(){
+  let h = esc2(siteHTML);
+  h = h.replace(/(&lt;\/?[a-zA-Z][^&]*?&gt;)/g, '<span class="tg">$1</span>');
+  h = h.replace(/("(?:[^"\\]|\\.)*")/g, '<span class="st">$1</span>');
+  $('#codeBox').innerHTML = h || '<span class="cm">// ' + T[lang].noSite + '</span>';
+}
+
+/* ---------- history ---------- */
+function renderHist(){
+  const box = $('#histBox'); box.innerHTML = '';
+  if(!history.length){ box.innerHTML = '<p style="color:var(--dim);font-size:.86rem">' + T[lang].noHist + '</p>'; return; }
+  history.forEach((h,i) => {
+    const d = document.createElement('div');
+    d.className = 'histItem';
+    d.innerHTML = '<span>🕘</span><span class="hp"></span><span class="ht"></span><button class="icob" style="padding:5px 12px;font-size:.76rem"></button>';
+    d.querySelector('.hp').textContent = 'v' + (i+1) + ' · ' + h.prompt.slice(0,60);
+    d.querySelector('.ht').textContent = h.time;
+    const b = d.querySelector('button'); b.textContent = T[lang].restore;
+    b.addEventListener('click', () => { siteHTML = h.html; cfg = JSON.parse(JSON.stringify(h.cfg)); $('#frame').srcdoc = siteHTML; renderCode(); showTab('frame'); clog(T[lang].restored + ' v'+(i+1), 'ok'); });
+    box.appendChild(d);
+  });
+}
+
+/* ================= GENERATION ENGINE ================= */
+const COLORS = {red:'#ef4444', laal:'#ef4444', 'लाल':'#ef4444', blue:'#3b82f6', neela:'#3b82f6', 'नीला':'#3b82f6', 'नीली':'#3b82f6', green:'#10b981', hara:'#10b981', 'हरा':'#10b981', 'हरी':'#10b981', purple:'#8b5cf6', 'बैंगनी':'#8b5cf6', orange:'#f97316', 'नारंगी':'#f97316', pink:'#ec4899', gulabi:'#ec4899', 'गुलाबी':'#ec4899', cyan:'#06b6d4', gold:'#f59e0b', sunhara:'#f59e0b', 'सुनहरा':'#f59e0b'};
+const GENC = {
+hi:{
+  aboutT:"परिचय", galleryT:"झलकियाँ", testiT:"लोग क्या कहते हैं", contactT:"संपर्क करें",
+  fName:"आपका नाम", fEmail:"ईमेल", fMsg:"संदेश", fSend:"भेजें", madeWith:"NovaSites से बनाया गया 🪐", readMore:"पढ़ें →",
+  testi:[{q:"शानदार काम — तेज़ और बढ़िया क्वालिटी!", a:"— राहुल शर्मा"},{q:"पूरी तरह प्रोफेशनल अनुभव।", a:"— प्रिया वर्मा"}],
+  portfolio:{label:"पोर्टफोलियो", name:"मेरा पोर्टफोलियो", tag:"डिज़ाइन • कोड • क्रिएटिविटी", about:"मैं एक जुनूनी क्रिएटर हूँ जो आइडियाज़ को हकीकत में बदलता है। नीचे मेरा काम और स्किल्स देखिए।", itemsTitle:"मेरी स्किल्स", items:["वेब डिज़ाइन","ग्राफिक डिज़ाइन","फोटोग्राफी","ब्रांडिंग","UI/UX"], cta:"संपर्क करें"},
+  restaurant:{label:"रेस्टोरेंट", name:"स्वाद कैफ़े", tag:"ताज़ा खाना, घर जैसा स्वाद", about:"2020 से हम अपने मेहमानों को ताज़ा, लज़ीज़ और साफ़-सुथरा खाना परोस रहे हैं। एक बार आइए — बार-बार आएँगे।", itemsTitle:"हमारा मेन्यू", items:["स्पेशल थाली - ₹149","मसाला डोसा - ₹99","कुल्हड़ चाय - ₹25","गुलाब जामुन - ₹49"], cta:"टेबल बुक करें"},
+  shop:{label:"स्टोर", name:"नोवा स्टोर", tag:"बेहतरीन प्रोडक्ट्स, सही दाम", about:"क्वालिटी प्रोडक्ट्स की पूरी रेंज — भरोसे और तेज़ डिलीवरी के साथ।", itemsTitle:"हमारे प्रोडक्ट्स", items:["प्रीमियम हेडफ़ोन - ₹1,999","स्मार्ट वॉच - ₹2,499","बैकपैक - ₹899","ब्लूटूथ स्पीकर - ₹1,299"], cta:"अभी खरीदें"},
+  blog:{label:"ब्लॉग", name:"मेरा ब्लॉग", tag:"विचार, कहानियाँ और सीख", about:"यहाँ मैं अपने अनुभव, प्रयोग और सीखी हुई चीज़ें शेयर करता हूँ — सीधी-सादी भाषा में।", itemsTitle:"ताज़ा पोस्ट", items:["AI से वेबसाइट कैसे बनाएँ","कोडिंग की शुरुआत कैसे करें","मेरी पहली वेबसाइट की कहानी","10 ज़रूरी फ्री टूल्स"], cta:"पढ़ना शुरू करें"},
+  event:{label:"निमंत्रण", name:"शुभ आयोजन", tag:"आप सादर आमंत्रित हैं", about:"इस ख़ास मौके पर आपकी उपस्थिति ही हमारा सम्मान है। कृपया परिवार सहित पधारें।", itemsTitle:"कार्यक्रम", items:["शाम 6:00 - स्वागत","शाम 7:00 - मुख्य समारोह","रात 8:00 - भोजन","रात 9:30 - संगीत"], cta:"RSVP करें"},
+  business:{label:"बिज़नेस", name:"नोवा सॉल्यूशन्स", tag:"आपके बिज़नेस का डिजिटल पार्टनर", about:"हम छोटे और बड़े बिज़नेस को डिजिटल दुनिया में आगे बढ़ने में मदद करते हैं — वेबसाइट से मार्केटिंग तक।", itemsTitle:"हमारी सेवाएँ", items:["वेबसाइट डेवलपमेंट","डिजिटल मार्केटिंग","ब्रांडिंग","24×7 सपोर्ट"], cta:"बात करें"}
+},
+en:{
+  aboutT:"About", galleryT:"Gallery", testiT:"What people say", contactT:"Contact",
+  fName:"Your name", fEmail:"Email", fMsg:"Message", fSend:"Send", madeWith:"Made with NovaSites 🪐", readMore:"Read more →",
+  testi:[{q:"Fantastic work — fast and top quality!", a:"— Rahul Sharma"},{q:"A truly professional experience.", a:"— Priya Verma"}],
+  portfolio:{label:"Portfolio", name:"My Portfolio", tag:"Design • Code • Creativity", about:"I'm a passionate creator who turns ideas into reality. Explore my work and skills below.", itemsTitle:"My skills", items:["Web design","Graphic design","Photography","Branding","UI/UX"], cta:"Get in touch"},
+  restaurant:{label:"Restaurant", name:"Swaad Café", tag:"Fresh food, homely taste", about:"Since 2020 we've been serving fresh, delicious and hygienic food to our guests. Visit once — you'll keep coming back.", itemsTitle:"Our menu", items:["Special Thali - ₹149","Masala Dosa - ₹99","Kulhad Chai - ₹25","Gulab Jamun - ₹49"], cta:"Book a table"},
+  shop:{label:"Store", name:"Nova Store", tag:"Great products, fair prices", about:"A full range of quality products — with trust and fast delivery.", itemsTitle:"Our products", items:["Premium Headphones - ₹1,999","Smart Watch - ₹2,499","Backpack - ₹899","Bluetooth Speaker - ₹1,299"], cta:"Shop now"},
+  blog:{label:"Blog", name:"My Blog", tag:"Thoughts, stories & lessons", about:"Here I share my experiences, experiments and everything I learn — in simple words.", itemsTitle:"Latest posts", items:["How to build a website with AI","How to start coding","The story of my first website","10 essential free tools"], cta:"Start reading"},
+  event:{label:"Invitation", name:"A Special Celebration", tag:"You are cordially invited", about:"Your presence is our honour on this special occasion. Please join us with your family.", itemsTitle:"Schedule", items:["6:00 PM - Welcome","7:00 PM - Main ceremony","8:00 PM - Dinner","9:30 PM - Music"], cta:"RSVP"},
+  business:{label:"Business", name:"Nova Solutions", tag:"Your business's digital partner", about:"We help businesses big and small grow in the digital world — from websites to marketing.", itemsTitle:"Our services", items:["Website development","Digital marketing","Branding","24×7 support"], cta:"Let's talk"}
+}
+};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function parsePrompt(p){
+  const tk = p.toLowerCase();
+  const hasAny = ws => ws.some(w => tk.includes(w));
+  let type = 'business';
+  if(hasAny(['portfolio','पोर्टफोलियो'])) type = 'portfolio';
+  else if(hasAny(['restaurant','cafe','कैफे','कैफ़े','रेस्टोरेंट','रेस्तरां','chai','चाय','food','खाना','dhaba','ढाबा','hotel'])) type = 'restaurant';
+  else if(hasAny(['shop','store','दुकान','dukan','दुकान','ecommerce','बेचन','कपड़','mobile shop'])) type = 'shop';
+  else if(hasAny(['blog','ब्लॉग','news','न्यूज़'])) type = 'blog';
+  else if(hasAny(['event','wedding','shaadi','शादी','birthday','जन्मदिन','invite','निमंत्रण','पार्टी','party'])) type = 'event';
+  let accent = '#8b5cf6';
+  for(const w in COLORS){ if(tk.includes(w)){ accent = COLORS[w]; break; } }
+  const dark = !hasAny(['light theme','light mode','white theme','सफेद','light color','उजल']);
+  let name = null;
+  const qm = p.match(/["“']([^"”']{2,32})["”']/);
+  if(qm) name = qm[1];
+  else { const nm = p.match(/(?:naam|नाम|named|called)\s+([A-Za-z0-9ऀ-ॿ ]{2,26})/); if(nm) name = nm[1].trim(); }
+  if(!name) name = (type === 'portfolio' || type === 'blog') && user ? user.name + (type==='blog' ? (lang==='hi'?' का ब्लॉग':"'s Blog") : '') : GENC[lang][type].name;
+  const secMap = {
+    portfolio:['hero','about','items','gallery','contact'],
+    restaurant:['hero','about','items','gallery','contact'],
+    shop:['hero','items','about','testi','contact'],
+    blog:['hero','items','about','contact'],
+    event:['hero','about','items','gallery','contact'],
+    business:['hero','about','items','testi','contact']
+  };
+  return {type, accent, dark, name, anim:true, sections:secMap[type].slice(), lang};
+}
+
+function esc3(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function siteCSS(c){
+  const dk = c.dark;
+  const bg = dk?'#0b0b14':'#f8f9fd', card = dk?'rgba(255,255,255,.05)':'#ffffff', tx = dk?'#e9edf5':'#182030',
+        dm = dk?'#9aa5bd':'#5a6475', ln = dk?'rgba(255,255,255,.12)':'rgba(15,25,50,.12)';
+  return ':root{--a:'+c.accent+'}*{box-sizing:border-box;margin:0;padding:0}'+
+  'body{font-family:system-ui,"Segoe UI","Nirmala UI",sans-serif;background:'+bg+';color:'+tx+';line-height:1.65}'+
+  '.wrap{max-width:920px;margin:auto;padding:0 22px}'+
+  'nav{display:flex;align-items:center;gap:18px;padding:16px 0}'+
+  'nav b{font-size:1.1rem}nav a{color:'+dm+';text-decoration:none;font-size:.88rem;margin-inline-start:auto}'+
+  'header{padding:74px 0 58px;text-align:center}'+
+  '.badge{display:inline-block;border:1.5px solid var(--a);color:var(--a);border-radius:999px;padding:5px 16px;font-size:.8rem;font-weight:700;margin-bottom:16px}'+
+  'h1{font-size:clamp(2rem,6vw,3rem);line-height:1.15}'+
+  '.tag{color:'+dm+';font-size:1.1rem;margin-top:10px}'+
+  '.btn{display:inline-block;background:var(--a);color:#fff;padding:12px 27px;border-radius:11px;text-decoration:none;font-weight:700;margin-top:24px;border:none;font-size:1rem;cursor:pointer;font-family:inherit}'+
+  'section{padding:42px 0;border-top:1px solid '+ln+'}'+
+  'h2{font-size:1.45rem;margin-bottom:16px}'+
+  'p.ab{color:'+dm+';font-size:1.02rem;max-width:640px}'+
+  '.chips{display:flex;flex-wrap:wrap;gap:10px}.chip{border:1.5px solid var(--a);color:var(--a);border-radius:999px;padding:7px 17px;font-weight:600}'+
+  '.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}'+
+  '.card{background:'+card+';border:1px solid '+ln+';border-radius:14px;padding:19px}'+
+  '.card b{display:block;font-size:1.02rem}.card span{color:var(--a);font-weight:800;margin-top:4px;display:inline-block}'+
+  '.card p{color:'+dm+';font-size:.88rem;margin-top:6px}'+
+  '.gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}'+
+  '.gi2{aspect-ratio:4/3;border-radius:12px;background:linear-gradient(135deg,var(--a),'+(dk?'#1b2340':'#dfe6ff')+');opacity:.85}'+
+  '.testi{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}'+
+  '.tcard{background:'+card+';border:1px solid '+ln+';border-radius:14px;padding:20px;font-style:italic;color:'+dm+'}'+
+  '.tcard b{display:block;margin-top:10px;font-style:normal;color:'+tx+'}'+
+  'form{display:grid;gap:11px;max-width:460px}'+
+  'input,textarea{background:'+(dk?'rgba(255,255,255,.06)':'#fff')+';border:1px solid '+ln+';border-radius:10px;padding:11px 13px;color:'+tx+';font-family:inherit;font-size:.93rem}'+
+  'footer{padding:30px 0 38px;text-align:center;color:'+dm+';font-size:.84rem;border-top:1px solid '+ln+'}'+
+  (c.anim ? '.nv-in{animation:nvin .7s ease both}@keyframes nvin{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}' : '') +
+  '@media(max-width:560px){header{padding:54px 0 40px}}';
+}
+
+function sitePart(c, sec){
+  const L = GENC[lang], C = L[c.type], name = esc3(c.name);
+  if(sec === 'nav') return '<div class="wrap"><nav><b>' + name + '</b><a href="#contact">' + L.contactT + '</a></nav></div>';
+  if(sec === 'hero') return '<div class="wrap"><header><span class="badge">' + C.label + '</span><h1>' + name + '</h1><p class="tag">' + C.tag + '</p><a class="btn" href="#contact">' + C.cta + '</a></header></div>';
+  if(sec === 'about') return '<div class="wrap"><section><h2>' + L.aboutT + '</h2><p class="ab">' + C.about + '</p></section></div>';
+  if(sec === 'items'){
+    if(c.type === 'portfolio') return '<div class="wrap"><section><h2>' + C.itemsTitle + '</h2><div class="chips">' + C.items.map(i => '<span class="chip">' + i + '</span>').join('') + '</div></section></div>';
+    if(c.type === 'blog') return '<div class="wrap"><section><h2>' + C.itemsTitle + '</h2><div class="cards">' + C.items.map(i => '<div class="card"><b>' + i + '</b><p>' + L.readMore + '</p></div>').join('') + '</div></section></div>';
+    return '<div class="wrap"><section><h2>' + C.itemsTitle + '</h2><div class="cards">' + C.items.map(i => { const m = i.split(/ - /); return '<div class="card"><b>' + m[0] + '</b>' + (m[1] ? '<span>' + m[1] + '</span>' : '') + '</div>'; }).join('') + '</div></section></div>';
+  }
+  if(sec === 'gallery') return '<div class="wrap"><section><h2>' + L.galleryT + '</h2><div class="gal">' + '<div class="gi2"></div>'.repeat(6) + '</div></section></div>';
+  if(sec === 'testi') return '<div class="wrap"><section><h2>' + L.testiT + '</h2><div class="testi">' + L.testi.map(t => '<div class="tcard">"' + t.q + '"<b>' + t.a + '</b></div>').join('') + '</div></section></div>';
+  if(sec === 'contact'){
+    const em = user ? user.email : 'hello@example.com';
+    return '<div class="wrap"><section id="contact"><h2>' + L.contactT + '</h2><form action="mailto:' + esc3(em) + '" method="post" enctype="text/plain">' +
+      '<input name="name" placeholder="' + L.fName + '" required><input name="email" type="email" placeholder="' + L.fEmail + '" required>' +
+      '<textarea name="message" rows="4" placeholder="' + L.fMsg + '"></textarea><button class="btn" type="submit" style="margin-top:4px">' + L.fSend + '</button></form></section></div>';
+  }
+  if(sec === 'footer') return '<div class="wrap"><footer>' + name + ' · ' + L.madeWith + '</footer></div>';
+  return '';
+}
+function assemble(c){
+  const parts = ['nav'].concat(c.sections).concat(['footer']).map(s => sitePart(c, s)).join('\n');
+  return '<!DOCTYPE html>\n<html lang="' + lang + '">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>' + esc3(c.name) + '</title>\n<meta name="description" content="' + esc3(c.name) + ' — ' + GENC[lang][c.type].tag + '">\n<style>\n' + siteCSS(c) + '\n</style>\n</head>\n<body>\n' + parts + '\n</body>\n</html>';
+}
+function frameDoc(){ return $('#frame').contentDocument; }
+function startDoc(c){
+  const d = frameDoc(); d.open();
+  d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + siteCSS(c) + '</style></head><body></body></html>');
+  d.close();
+}
+function addPart(html){
+  try{
+    const d = frameDoc(), div = d.createElement('div');
+    div.innerHTML = html;
+    while(div.firstChild) d.body.appendChild(div.firstChild);
+    const last = d.body.lastElementChild; if(last) last.classList.add('nv-in');
+  }catch(e){}
+}
+
+const ENGINE = {
+  download(){
+    if(!siteHTML) return;
+    setAgent('deploy','w');
+    const blob = new Blob([siteHTML], {type:'text/html'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = ((cfg ? cfg.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'') : '') || 'my-site') + '.html';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => { URL.revokeObjectURL(a.href); setAgent('deploy','d'); }, 1500);
+    clog(T[lang].dlLog, 'ok', T[lang].agDeploy);
+  },
+  rerender(){
+    if(!cfg) return;
+    siteHTML = assemble(cfg);
+    $('#frame').srcdoc = siteHTML;
+    renderCode();
+  },
+  async liveGen(p){
+    const data = await claudeAPI({max_tokens:12000,
+        system:'You are the Frontend Developer agent of NovaSites, an AI website builder. Return ONLY a complete, valid, single-file HTML document (all CSS/JS inline). No markdown fences, no explanation. Modern, responsive, beautiful design with smooth animations. Write visible text content in the same language as the user request.',
+        messages:[{role:'user', content:'Build this website: ' + p}]});
+    let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
+    const fence = out.match(/```(?:html)?\s*([\s\S]*?)```/);
+    if(fence) out = fence[1].trim();
+    if(!/^<!DOCTYPE|^<html/i.test(out)) throw new Error('Invalid HTML from AI');
+    return out;
+  },
+  async generate(regen){
+    if(building) return;
+    let p = $('#prompt').value.trim();
+    if(!p && cfg) p = cfg.prompt;
+    if(!p){ $('#prompt').focus(); $('#prompt').style.borderColor = '#f43f5e'; setTimeout(()=>{$('#prompt').style.borderColor='';},900); return; }
+    building = true;
+    ['genBtn','regenBtn','dlBtn','openBtn','copyBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = true);
+    showTab('frame'); resetAgents();
+    const t = T[lang];
+    /* build step list */
+    const ov = $('#buildOv'), list = $('#bstepList'); list.innerHTML = '';
+    t.bsteps.forEach(s => {
+      const d = document.createElement('div');
+      d.className = 'bstep';
+      d.innerHTML = '<span class="bi"></span><span></span>';
+      d.querySelector('span:last-child').textContent = s;
+      list.appendChild(d);
+    });
+    ov.hidden = false;
+    clog('▶ ' + t.genStart + ' "' + p.slice(0,70) + '"', 'inf');
+    cfg = parsePrompt(p); cfg.prompt = p;
+    let liveHTML = null, liveTried = false;
+    if(aiKey){
+      liveTried = true;
+      setAgent('planner','w'); list.children[0].classList.add('doing');
+      clog(t.liveTry, 'inf', t.agPlanner);
+      try{ liveHTML = await this.liveGen(p); clog(t.liveOk, 'ok', t.agFrontend); }
+      catch(err){ clog(t.liveFail + ' ' + err.message, 'wr'); this.chatBot('⚠️ ' + t.liveFailChat + '\n(' + err.message + ')', true); }
+    }
+    const AG = ['planner','designer','writer','frontend','frontend','frontend','animator','seo','mobile','debug'];
+    for(let i=0; i<t.bsteps.length; i++){
+      const row = list.children[i];
+      row.classList.add('doing');
+      const agid = AG[i];
+      setAgent(agid, 'w');
+      if(i === 8) setAgent('a11y','w');
+      clog(t.blogs[i], i >= 8 ? 'ok' : 'inf', t['ag' + agid.charAt(0).toUpperCase() + agid.slice(1)]);
+      /* offline progressive injection */
+      if(!liveHTML){
+        if(i === 3) startDoc(cfg), addPart(sitePart(cfg,'nav'));
+        if(i === 4) addPart(sitePart(cfg,'hero'));
+        if(i === 5){ for(const s of cfg.sections.slice(1)){ addPart(sitePart(cfg, s)); await sleep(340); } addPart(sitePart(cfg,'footer')); }
+      } else if(i === 5){ $('#frame').srcdoc = liveHTML; }
+      await sleep(i === 5 ? 500 : 480 + Math.random()*520);
+      row.classList.remove('doing'); row.classList.add('done');
+      setAgent(agid, 'd');
+      if(i === 8) setAgent('a11y','d');
+    }
+    siteHTML = liveHTML || assemble(cfg);
+    if(!liveHTML) $('#frame').srcdoc = siteHTML;
+    renderCode();
+    $('#furl').textContent = 'novasites.preview/' + cfg.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    history.unshift({prompt:p, html:siteHTML, cfg:JSON.parse(JSON.stringify(cfg)), time:new Date().toLocaleTimeString(lang==='hi'?'hi-IN':'en-IN',{hour:'2-digit',minute:'2-digit'})});
+    history = history.slice(0,6);
+    clog('✔ ' + t.genDone + (liveHTML ? ' (Claude AI)' : ''), 'ok', t.agDebug);
+    await sleep(450);
+    ov.hidden = true;
+    ['genBtn','regenBtn','dlBtn','openBtn','copyBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = false);
+    building = false;
+    this.chatBot('✅ ' + t.chDone.replace('{n}', cfg.name));
+  },
+  quick(kind){
+    if(!cfg || building) return;
+    const t = T[lang];
+    if(kind === 'section'){
+      const pool = ['gallery','testi','about','contact'];
+      const nxt = pool.find(s => !cfg.sections.includes(s));
+      if(nxt){ cfg.sections.push(nxt); setAgent('frontend','w'); this.rerender(); setTimeout(()=>setAgent('frontend','d'),700); clog(t.qaAddLog, 'ok', t.agFrontend); }
+      else this.chatBot(t.qaFull);
+    }
+    if(kind === 'theme'){ cfg.dark = !cfg.dark; setAgent('designer','w'); this.rerender(); setTimeout(()=>setAgent('designer','d'),700); clog(t.qaThemeLog, 'ok', t.agDesigner); }
+    if(kind === 'color'){
+      const cs = ['#8b5cf6','#3b82f6','#10b981','#ef4444','#f97316','#ec4899','#06b6d4','#f59e0b'];
+      cfg.accent = cs[(cs.indexOf(cfg.accent)+1) % cs.length];
+      setAgent('designer','w'); this.rerender(); setTimeout(()=>setAgent('designer','d'),700);
+      clog(t.qaColorLog + ' ' + cfg.accent, 'ok', t.agDesigner);
+    }
+  },
+  /* ---------- chat ---------- */
+  addChat(text, who, tag, err){
+    const box = $('#cmsgs');
+    const m = document.createElement('div');
+    m.className = 'cm2 ' + (who === 'u' ? 'u' : 'b') + (err ? ' err' : '');
+    if(tag){ const s = document.createElement('span'); s.className = 'tag2'; s.textContent = tag; m.appendChild(s); }
+    m.appendChild(document.createTextNode(text));
+    box.appendChild(m);
+    box.scrollTop = box.scrollHeight;
+    return m;
+  },
+  chatBot(text, err){
+    this.addChat(text, 'b', aiKey ? T[lang].modeLive : T[lang].modeOff, err);
+    if(!$('#chatPanel').classList.contains('open')) $('#ndot').hidden = false;
+  },
+  async chatSend(){
+    const inp = $('#cin2'), v = inp.value.trim();
+    if(!v) return;
+    inp.value = '';
+    ENGINE.addChat(v, 'u');
+    const typing = ENGINE.addChat('', 'b');
+    typing.innerHTML = '<span class="tdots"><i></i><i></i><i></i></span>';
+    const done = (txt, err) => { typing.remove(); ENGINE.chatBot(txt, err); };
+    const t = T[lang], tk = v.toLowerCase();
+    const hasAny = ws => ws.some(w => tk.includes(w));
+    await sleep(420 + Math.random()*400);
+    /* site edit commands (need a generated site) */
+    let col = null; for(const w in COLORS){ if(tk.includes(w)){ col = COLORS[w]; break; } }
+    if(cfg && col){ cfg.accent = col; ENGINE.rerender(); setAgent('designer','d'); return done('🎨 ' + t.cColor); }
+    if(cfg && hasAny(['dark','डार्क'])){ cfg.dark = true; ENGINE.rerender(); return done('🌙 ' + t.cDark); }
+    if(cfg && hasAny(['light','लाइट','सफेद'])){ cfg.dark = false; ENGINE.rerender(); return done('☀️ ' + t.cLight); }
+    if(cfg && hasAny(['form','फॉर्म','फ़ॉर्म'])){ if(!cfg.sections.includes('contact')) cfg.sections.push('contact'); ENGINE.rerender(); return done('📮 ' + t.cForm); }
+    if(cfg && hasAny(['gallery','गैलरी'])){ if(!cfg.sections.includes('gallery')) cfg.sections.push('gallery'); ENGINE.rerender(); return done('🖼️ ' + t.cGal); }
+    if(cfg && hasAny(['testimonial','टेस्टिमोनियल','review'])){ if(!cfg.sections.includes('testi')) cfg.sections.push('testi'); ENGINE.rerender(); return done('⭐ ' + t.cTesti); }
+    if(cfg && hasAny(['animation kam','reduce animation','एनीमेशन कम','कम एनीमेशन'])){ cfg.anim = false; ENGINE.rerender(); return done('🎞️ ' + t.cAnim); }
+    if(cfg && hasAny(['professional','प्रोफेशनल'])){ cfg.accent = '#6366f1'; ENGINE.rerender(); return done('👔 ' + t.cProf); }
+    if(cfg && hasAny(['publish','पब्लिश'])){ ENGINE.download(); return done('🚀 ' + t.cPub); }
+    if(hasAny(['download','डाउनलोड'])){ if(siteHTML){ ENGINE.download(); return done('⬇️ ' + t.cDl); } return done(t.cNeed); }
+    if(hasAny(['rebuild','dobara','दोबारा','regenerate','फिर से बना'])){ done(t.cRebuild); ENGINE.generate(true); return; }
+    if(hasAny(['help','madad','मदद'])) return done('📖 ' + t.cHelp);
+    if(hasAny(['hello','hi','namaste','नमस्ते','hey'])) return done('👋 ' + (user ? user.name + ', ' : '') + t.cHi);
+    if(!cfg && (col || hasAny(['site','साइट','website','वेबसाइट','बना']))) return done('🏗️ ' + t.cNeed);
+    /* live AI fallback */
+    if(aiKey){
+      try{
+        chatHist.push({role:'user', content:v});
+        const ctx = cfg ? 'Current generated site config: ' + JSON.stringify({type:cfg.type, name:cfg.name, accent:cfg.accent, dark:cfg.dark, sections:cfg.sections}) : 'No site generated yet.';
+        const data = await claudeAPI({max_tokens:6000,
+            system:'You are Nova AI, the assistant inside NovaSites (an AI website builder made by Vedant Yadav with Claude). ' + ctx + ' Reply in the user\'s language, concisely. If the user asks for a completely new/changed website, include the full single-file HTML in a ```html code block.',
+            messages: chatHist.slice(-10)});
+        let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
+        chatHist.push({role:'assistant', content:out});
+        const fence = out.match(/```(?:html)?\s*([\s\S]*?)```/);
+        if(fence && /<html|<!DOCTYPE/i.test(fence[1])){
+          siteHTML = fence[1].trim();
+          $('#frame').srcdoc = siteHTML; renderCode();
+          $('#dlBtn').disabled = false; $('#openBtn').disabled = false; $('#copyBtn').disabled = false;
+          out = out.replace(/```(?:html)?[\s\S]*?```/, '').trim() || t.cApplied;
+          clog(t.cAppliedLog, 'ok', t.agFrontend);
+        }
+        return done(out);
+      }catch(err){ return done('⚠️ ' + t.errLive + '\n(' + err.message + ')', true); }
+    }
+    return done('🤔 ' + t.cUnknown);
+  }
+};
+
+window.addEventListener('DOMContentLoaded', () => {
+  /* landing */
+  $('#navSign').addEventListener('click', openG);
+  $('#gSign').addEventListener('click', openG);
+  $('#getStarted').addEventListener('click', openG);
+  document.querySelectorAll('[data-goto]').forEach(b => b.addEventListener('click', openG));
+  $('#gClose').addEventListener('click', () => { $('#gmodal').hidden = true; });
+  $('#gmodal').addEventListener('click', e => { if(e.target === $('#gmodal')) $('#gmodal').hidden = true; });
+  function gGo(){
+    const n = $('#gName').value.trim();
+    let em = $('#gEmail').value.trim();
+    if(!n){ $('#gName').focus(); return; }
+    if(!em) em = n.toLowerCase().replace(/\s+/g,'') + '@gmail.com';
+    finishSign({name:n, email:em});
+    $('#gName').value = ''; $('#gEmail').value = '';
+  }
+  $('#gGo').addEventListener('click', gGo);
+  $('#gEmail').addEventListener('keydown', e => { if(e.key === 'Enter') gGo(); });
+  $('#outBtn').addEventListener('click', () => { saveUser(null); refreshGate(); });
+
+  /* lang */
+  const flip = () => applyLang(lang === 'hi' ? 'en' : 'hi');
+  $('#langL').addEventListener('click', flip);
+  $('#langD').addEventListener('click', flip);
+
+  /* tabs + devices */
+  document.querySelectorAll('.tb').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+  document.querySelectorAll('.dv').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.dv').forEach(x => x.classList.remove('on')); b.classList.add('on');
+    $('#frameWrap').style.width = b.dataset.w;
+  }));
+  $('#fsBtn').addEventListener('click', () => {
+    const fw = $('#frameWrap');
+    if(document.fullscreenElement) document.exitFullscreen();
+    else if(fw.requestFullscreen) fw.requestFullscreen();
+  });
+  $('#dlBtn').addEventListener('click', ENGINE.download);
+  $('#openBtn').addEventListener('click', () => { if(!siteHTML) return; const u = URL.createObjectURL(new Blob([siteHTML], {type:'text/html'})); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); });
+  $('#copyBtn').addEventListener('click', async () => { if(!siteHTML) return; try{ await navigator.clipboard.writeText(siteHTML); clog(lang === 'hi' ? 'कोड कॉपी हो गया ✔' : 'Code copied ✔', 'ok'); $('#copyBtn').textContent = '✔'; setTimeout(() => { $('#copyBtn').textContent = '⧉'; }, 1200); }catch(e){} });
+  $('#prompt').addEventListener('keydown', e => { if((e.ctrlKey || e.metaKey) && e.key === 'Enter') ENGINE.generate(); });
+
+  /* generator */
+  $('#genBtn').addEventListener('click', () => ENGINE.generate(false));
+  $('#regenBtn').addEventListener('click', () => ENGINE.generate(true));
+  $('#qaSection').addEventListener('click', () => ENGINE.quick('section'));
+  $('#qaTheme').addEventListener('click', () => ENGINE.quick('theme'));
+  $('#qaColor').addEventListener('click', () => ENGINE.quick('color'));
+
+
+  /* chat */
+  $('#fab').addEventListener('click', () => { $('#chatPanel').classList.add('open'); $('#ndot').hidden = true; });
+  $('#chatClose').addEventListener('click', () => $('#chatPanel').classList.remove('open'));
+  $('#chatClear').addEventListener('click', () => { $('#cmsgs').innerHTML = ''; chatHist = []; seeded = false; seedChat(); });
+  $('#csend2').addEventListener('click', ENGINE.chatSend);
+  $('#cin2').addEventListener('keydown', e => { if(e.key === 'Enter') ENGINE.chatSend(); });
+
+  refreshGate();
+  applyLang(lang);
+});
+
+/* chat seed */
+let seeded = false;
+function seedChat(){
+  if(seeded || !user) return; seeded = true;
+  ENGINE.chatBot(T[lang].chSeed.replace('{n}', user.name));
+}
+function buildEx(){
+  const box = $('#exRow'); if(!box) return; box.innerHTML = '';
+  T[lang].examples.forEach(x => {
+    const b = document.createElement('button');
+    b.className = 'ex'; b.textContent = x;
+    b.addEventListener('click', () => { $('#prompt').value = x; });
+    box.appendChild(b);
+  });
+}
+function buildChatChips(){
+  const box = $('#cchips'); if(!box) return; box.innerHTML = '';
+  T[lang].cchips.forEach(x => {
+    const b = document.createElement('button');
+    b.className = 'ex'; b.textContent = x;
+    b.addEventListener('click', () => { $('#cin2').value = x; ENGINE.chatSend(); });
+    box.appendChild(b);
+  });
+}
+function buildAgentList(){
+  const box = $('#agentList'); if(!box) return; box.innerHTML = '';
+  AGENTS.forEach(a => {
+    const d = document.createElement('div');
+    d.className = 'agent'; d.id = 'ag-' + a.id;
+    d.innerHTML = '<div class="aico">' + a.icon + '</div><div><div class="anm"></div><div class="arl"></div></div><span class="ast"></span>';
+    d.querySelector('.anm').textContent = a[lang];
+    d.querySelector('.arl').textContent = a['r_'+lang];
+    d.querySelector('.ast').textContent = T[lang].stIdle;
+    box.appendChild(d);
+  });
+}
+function setAgent(id, state){
+  const el = $('#ag-' + id); if(!el) return;
+  el.className = 'agent' + (state === 'w' ? ' w' : state === 'd' ? ' d' : '');
+  el.querySelector('.ast').textContent = state === 'w' ? T[lang].stWork : state === 'd' ? T[lang].stDone : T[lang].stIdle;
+}
+function resetAgents(){ AGENTS.forEach(a => setAgent(a.id, '')); }
+</script>
+</body>
+</html>
