@@ -594,11 +594,39 @@ let user = null, memUser = null;
 try{ const v = localStorage.getItem('nv-user'); user = v ? JSON.parse(v) : null; }catch(e){ user = memUser; }
 function saveUser(u){ user = u; memUser = u; try{ u ? localStorage.setItem('nv-user', JSON.stringify(u)) : localStorage.removeItem('nv-user'); }catch(e){} }
 let aiKey = 'server', aiModel = 'claude-sonnet-5'; /* AI runs via /api/claude — key server par hai */
-async function claudeAPI(payload){
+async function claudeAPI(payload, onDelta){
+  if(onDelta){
+    try{ return await claudeStream(payload, onDelta); }
+    catch(e){ try{ clog('stream fallback: ' + e.message, 'wr'); }catch(_){} }
+  }
   const res = await fetch('/api/claude', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(Object.assign({model:aiModel}, payload))});
   const data = await res.json().catch(() => ({}));
   if(!res.ok) throw new Error((data && data.error && data.error.message) || ('HTTP ' + res.status));
   return data;
+}
+async function claudeStream(payload, onDelta){
+  const res = await fetch('/api/claude', {method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(Object.assign({model:aiModel, stream:true}, payload))});
+  if(!res.ok){ const d = await res.json().catch(() => ({})); throw new Error((d && d.error && d.error.message) || ('HTTP ' + res.status)); }
+  const ct = res.headers.get('content-type') || '';
+  if(!ct.includes('event-stream')) return await res.json();
+  const reader = res.body.getReader(), dec = new TextDecoder();
+  let buf = '', full = '';
+  while(true){
+    const chunk = await reader.read();
+    if(chunk.done) break;
+    buf += dec.decode(chunk.value, {stream:true});
+    const lines = buf.split('\n'); buf = lines.pop();
+    for(const ln of lines){
+      if(!ln.startsWith('data:')) continue;
+      const js = ln.slice(5).trim();
+      if(!js) continue;
+      let ev = null; try{ ev = JSON.parse(js); }catch(e){ continue; }
+      if(ev.type === 'content_block_delta' && ev.delta && ev.delta.text){ full += ev.delta.text; try{ onDelta(full); }catch(e){} }
+      else if(ev.type === 'error') throw new Error((ev.error && ev.error.message) || 'stream error');
+    }
+  }
+  if(!full.trim()) throw new Error('Empty AI response');
+  return {content:[{type:'text', text: full}]};
 }
 let cfg = null, siteHTML = '', building = false, history = [], chatHist = [];
 
@@ -933,9 +961,17 @@ const ENGINE = {
     renderCode();
   },
   async liveGen(p){
+    let lastPaint = 0, streamed = false;
+    const onDelta = full => {
+      $('#furl').textContent = '🧠 Claude likh raha hai… ' + full.length.toLocaleString() + ' chars';
+      let doc = full; const fm = doc.match(/```(?:html)?\s*([\s\S]*)/); if(fm) doc = fm[1];
+      if(!streamed && /<!DOCTYPE|<html/i.test(doc)){ streamed = true; $('#buildOv').hidden = true; clog('🧠 Claude AI live likh raha hai — preview dekhte raho!', 'inf'); }
+      const now = Date.now();
+      if(streamed && now - lastPaint > 1000){ lastPaint = now; $('#frame').srcdoc = doc; }
+    };
     const data = await claudeAPI({max_tokens:12000,
         system:'You are the Frontend Developer agent of NovaSites, an AI website builder. Return ONLY a complete, valid, single-file HTML document (all CSS/JS inline). No markdown fences, no explanation. Modern, responsive, beautiful, with smooth animations. CRITICAL DESIGN RULES: choose colors, fonts and layout that FIT the requested business/topic (bakery = warm & cozy, gym = bold & energetic, law firm = classic & trustworthy, kids = playful...). NEVER default to a dark purple/blue space theme and NEVER imitate the NovaSites builder UI look. Every site must feel unique: vary hero style, section order, typography and color palette. Write visible text content in the same language as the user request.',
-        messages:[{role:'user', content:'Build this website: ' + p}]});
+        messages:[{role:'user', content:'Build this website: ' + p}]}, onDelta);
     let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
     const fence = out.match(/```(?:html)?\s*([\s\S]*?)```/);
     if(fence) out = fence[1].trim();
@@ -1072,9 +1108,9 @@ const ENGINE = {
     if(aiKey){
       try{
         chatHist.push({role:'user', content:v});
-        const ctx = cfg ? 'Current generated site config: ' + JSON.stringify({type:cfg.type, name:cfg.name, accent:cfg.accent, dark:cfg.dark, sections:cfg.sections}) : 'No site generated yet.';
-        const data = await claudeAPI({max_tokens:6000,
-            system:'You are Nova AI, the assistant inside NovaSites (an AI website builder made by Vedant Yadav with Claude). ' + ctx + ' Reply in the user\'s language, concisely. If the user asks for a completely new/changed website, include the full single-file HTML in a ```html code block.',
+        const ctx = siteHTML ? ('CURRENT WEBSITE FULL HTML (user may ask you to modify it):\n```html\n' + siteHTML.slice(0, 60000) + '\n```') : 'No site generated yet.';
+        const data = await claudeAPI({max_tokens: siteHTML ? 12000 : 4000,
+            system:'You are Nova AI, the assistant inside NovaSites (an AI website builder made by Vedant Yadav with Claude). ' + ctx + ' Reply in the user\'s language, concisely. If the user asks for a completely new/changed website, include the full single-file HTML in a ```html code block. When modifying the current site, ALWAYS return the COMPLETE updated single-file HTML (never a fragment or diff), keep everything the user did not ask to change, and briefly say in words what you changed.',
             messages: chatHist.slice(-10)});
         let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
         chatHist.push({role:'assistant', content:out});
