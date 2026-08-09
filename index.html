@@ -596,6 +596,23 @@ try{ const v = localStorage.getItem('nv-user'); user = v ? JSON.parse(v) : null;
 function saveUser(u){ user = u; memUser = u; try{ u ? localStorage.setItem('nv-user', JSON.stringify(u)) : localStorage.removeItem('nv-user'); }catch(e){} }
 let aiKey = 'server', aiModel = 'claude-sonnet-5'; /* AI runs via /api/claude — key server par hai */
 let fixTried = false;
+/* Watchdog: agar generated site kisi bhi tarah navigate kare (JS location, meta refresh...), preview turant restore hota hai */
+setInterval(() => {
+  const f = document.getElementById('frame');
+  if(!f) return;
+  const kept = f.getAttribute('srcdoc');
+  if(!kept) return;
+  let bad = false;
+  try{
+    const href = f.contentWindow.location.href;
+    bad = href !== 'about:srcdoc' && href !== 'about:blank';
+  }catch(e){ bad = true; }
+  if(bad){
+    try{ clog('🛡️ Site ne bahar navigate karne ki koshish ki — preview restore kar diya', 'wr'); }catch(_){}
+    f.setAttribute('srcdoc', '');
+    f.setAttribute('srcdoc', kept);
+  }
+}, 1200);
 window.addEventListener('message', e => {
   if(!e.data || !e.data.nvErr) return;
   try{ clog('🐞 Site error: ' + e.data.nvErr, 'wr'); }catch(_){}
@@ -948,7 +965,11 @@ let offParts = null, offCSS = '';
 function offHTML(){ return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + offCSS + '<\/style><\/head><body>' + (offParts || []).join('\n') + '<\/body><\/html>'; }
 function armSite(h){
   if(!h) return h;
-  var guard = '<scr' + 'ipt>(function(){document.addEventListener("click",function(e){var t=e.target;var a=t&&t.closest?t.closest("a"):null;if(a){var href=a.getAttribute("href")||"";if(/^https?:/i.test(href)){a.setAttribute("target","_blank");a.setAttribute("rel","noopener");}else if(href.indexOf("#")!==0){e.preventDefault();}}},true);document.addEventListener("submit",function(e){e.preventDefault();},false);window.addEventListener("error",function(e){try{parent.postMessage({nvErr:String((e&&e.message)||"script error")},"*");}catch(_){}});})();</scr' + 'ipt>';
+  try{
+    h = h.replace(/((?:window|top|parent|document)\s*\.\s*)?location\s*\.\s*(href|replace|assign|reload)/g, 'window.__nvloc.$2');
+    h = h.replace(/(?<![\w.$])location\s*=(?!=)/g, 'window.__nvloc.href =');
+  }catch(e){}
+  var guard = '<scr' + 'ipt>window.__nvloc = {href:\'\', replace:function(){}, assign:function(){}, reload:function(){}};(function(){document.addEventListener("click",function(e){var t=e.target;var a=t&&t.closest?t.closest("a"):null;if(a){var href=a.getAttribute("href")||"";if(/^https?:/i.test(href)){a.setAttribute("target","_blank");a.setAttribute("rel","noopener");}else if(href.indexOf("#")!==0){e.preventDefault();}}},true);document.addEventListener("submit",function(e){e.preventDefault();},false);window.addEventListener("error",function(e){try{parent.postMessage({nvErr:String((e&&e.message)||"script error")},"*");}catch(_){}});})();</scr' + 'ipt>';
   if(/<head[^>]*>/i.test(h)) return h.replace(/<head([^>]*)>/i, '<head$1>' + guard);
   return guard + h;
 }
@@ -983,7 +1004,7 @@ const ENGINE = {
       if(streamed && now - lastPaint > 1000){ lastPaint = now; $('#frame').srcdoc = armSite(doc); }
     };
     const data = await claudeAPI({max_tokens:16000,
-        system:'You are the Frontend Developer agent of NovaSites, an AI website builder. Return ONLY a complete, valid, single-file HTML document (all CSS/JS inline). No markdown fences, no explanation. Modern, responsive, beautiful, with smooth animations. CRITICAL DESIGN RULES: choose colors, fonts and layout that FIT the requested business/topic (bakery = warm & cozy, gym = bold & energetic, law firm = classic & trustworthy, kids = playful...). NEVER default to a dark purple/blue space theme and NEVER imitate the NovaSites builder UI look. Every site must feel unique: vary hero style, section order, typography and color palette. Write visible text content in the same language as the user request.',
+        system:'You are the Frontend Developer agent of NovaSites, an AI website builder. Return ONLY a complete, valid, single-file HTML document (all CSS/JS inline). No markdown fences, no explanation. Modern, responsive, beautiful, with smooth animations. CRITICAL DESIGN RULES: choose colors, fonts and layout that FIT the requested business/topic (bakery = warm & cozy, gym = bold & energetic, law firm = classic & trustworthy, kids = playful...). NEVER default to a dark purple/blue space theme and NEVER imitate the NovaSites builder UI look. Every site must feel unique: vary hero style, section order, typography and color palette. For internal navigation use ONLY #anchor href links — NEVER use location.href, location.replace, window.open, meta refresh, or any code that navigates or reloads the page. Write visible text content in the same language as the user request.',
         messages:[{role:'user', content:'Build this website: ' + p}]}, onDelta);
     let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
     const fence = out.match(/```(?:html)?\s*([\s\S]*?)```/);
@@ -1116,7 +1137,7 @@ const ENGINE = {
         chatHist.push({role:'user', content:v});
         const ctx = siteHTML ? ('CURRENT WEBSITE FULL HTML (user may ask you to modify it):\n```html\n' + siteHTML.slice(0, 60000) + '\n```') : 'No site generated yet.';
         const data = await claudeAPI({max_tokens: siteHTML ? 12000 : 4000,
-            system:'You are Nova AI, the assistant inside NovaSites (an AI website builder made by Vedant Yadav with Claude). ' + ctx + ' Reply in the user\'s language, concisely. If the user asks for a completely new/changed website, include the full single-file HTML in a ```html code block. When modifying the current site, ALWAYS return the COMPLETE updated single-file HTML (never a fragment or diff), keep everything the user did not ask to change, and briefly say in words what you changed.',
+            system:'You are Nova AI, the assistant inside NovaSites (an AI website builder made by Vedant Yadav with Claude). ' + ctx + ' Reply in the user\'s language, concisely. If the user asks for a completely new/changed website, include the full single-file HTML in a ```html code block. When modifying the current site, ALWAYS return the COMPLETE updated single-file HTML (never a fragment or diff), keep everything the user did not ask to change, never include code that navigates/reloads the page (no location.href, no meta refresh), and briefly say in words what you changed.',
             messages: chatHist.slice(-10)});
         let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
         chatHist.push({role:'assistant', content:out});
