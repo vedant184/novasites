@@ -927,20 +927,10 @@ function assemble(c){
   const parts = ['nav'].concat(c.sections).concat(['footer']).map(s => sitePart(c, s)).join('\n');
   return '<!DOCTYPE html>\n<html lang="' + lang + '">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n<title>' + esc3(c.name) + '</title>\n<meta name="description" content="' + esc3(c.name) + ' — ' + GENC[lang][c.type].tag + '">\n<style>\n' + siteCSS(c) + '\n</style>\n</head>\n<body>\n' + parts + '\n</body>\n</html>';
 }
-function frameDoc(){ return $('#frame').contentDocument; }
-function startDoc(c){
-  const d = frameDoc(); d.open();
-  d.write('<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + siteCSS(c) + '</style></head><body></body></html>');
-  d.close();
-}
-function addPart(html){
-  try{
-    const d = frameDoc(), div = d.createElement('div');
-    div.innerHTML = html;
-    while(div.firstChild) d.body.appendChild(div.firstChild);
-    const last = d.body.lastElementChild; if(last) last.classList.add('nv-in');
-  }catch(e){}
-}
+let offParts = null, offCSS = '';
+function offHTML(){ return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + offCSS + '<\/style><\/head><body>' + (offParts || []).join('\n') + '<\/body><\/html>'; }
+function startDoc(c){ offCSS = siteCSS(c); offParts = []; $('#frame').srcdoc = offHTML(); }
+function addPart(html){ if(!offParts) return; try{ offParts.push(html); $('#frame').srcdoc = offHTML(); }catch(e){} }
 
 const ENGINE = {
   download(){
