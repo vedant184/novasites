@@ -805,7 +805,7 @@ function renderHist(){
     d.querySelector('.hp').textContent = 'v' + (i+1) + ' · ' + h.prompt.slice(0,60);
     d.querySelector('.ht').textContent = h.time;
     const b = d.querySelector('button'); b.textContent = T[lang].restore;
-    b.addEventListener('click', () => { siteHTML = h.html; cfg = JSON.parse(JSON.stringify(h.cfg)); $('#frame').srcdoc = siteHTML; renderCode(); showTab('frame'); clog(T[lang].restored + ' v'+(i+1), 'ok'); });
+    b.addEventListener('click', () => { siteHTML = h.html; cfg = JSON.parse(JSON.stringify(h.cfg)); $('#frame').srcdoc = armSite(siteHTML); renderCode(); showTab('frame'); clog(T[lang].restored + ' v'+(i+1), 'ok'); });
     box.appendChild(d);
   });
 }
@@ -929,8 +929,14 @@ function assemble(c){
 }
 let offParts = null, offCSS = '';
 function offHTML(){ return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + offCSS + '<\/style><\/head><body>' + (offParts || []).join('\n') + '<\/body><\/html>'; }
-function startDoc(c){ offCSS = siteCSS(c); offParts = []; $('#frame').srcdoc = offHTML(); }
-function addPart(html){ if(!offParts) return; try{ offParts.push(html); $('#frame').srcdoc = offHTML(); }catch(e){} }
+function armSite(h){
+  if(!h) return h;
+  var guard = '<scr' + 'ipt>(function(){document.addEventListener("click",function(e){var t=e.target;var a=t&&t.closest?t.closest("a"):null;if(a){var href=a.getAttribute("href")||"";if(/^https?:/i.test(href)){a.setAttribute("target","_blank");a.setAttribute("rel","noopener");}else if(href.indexOf("#")!==0){e.preventDefault();}}},true);document.addEventListener("submit",function(e){e.preventDefault();},false);})();</scr' + 'ipt>';
+  if(/<head[^>]*>/i.test(h)) return h.replace(/<head([^>]*)>/i, '<head$1>' + guard);
+  return guard + h;
+}
+function startDoc(c){ offCSS = siteCSS(c); offParts = []; $('#frame').srcdoc = armSite(offHTML()); }
+function addPart(html){ if(!offParts) return; try{ offParts.push(html); $('#frame').srcdoc = armSite(offHTML()); }catch(e){} }
 
 const ENGINE = {
   download(){
@@ -947,7 +953,7 @@ const ENGINE = {
   rerender(){
     if(!cfg) return;
     siteHTML = assemble(cfg);
-    $('#frame').srcdoc = siteHTML;
+    $('#frame').srcdoc = armSite(siteHTML);
     renderCode();
   },
   async liveGen(p){
@@ -957,7 +963,7 @@ const ENGINE = {
       let doc = full; const fm = doc.match(/```(?:html)?\s*([\s\S]*)/); if(fm) doc = fm[1];
       if(!streamed && /<!DOCTYPE|<html/i.test(doc)){ streamed = true; $('#buildOv').hidden = true; clog('🧠 Claude AI live likh raha hai — preview dekhte raho!', 'inf'); }
       const now = Date.now();
-      if(streamed && now - lastPaint > 1000){ lastPaint = now; $('#frame').srcdoc = doc; }
+      if(streamed && now - lastPaint > 1000){ lastPaint = now; $('#frame').srcdoc = armSite(doc); }
     };
     const data = await claudeAPI({max_tokens:16000,
         system:'You are the Frontend Developer agent of NovaSites, an AI website builder. Return ONLY a complete, valid, single-file HTML document (all CSS/JS inline). No markdown fences, no explanation. Modern, responsive, beautiful, with smooth animations. CRITICAL DESIGN RULES: choose colors, fonts and layout that FIT the requested business/topic (bakery = warm & cozy, gym = bold & energetic, law firm = classic & trustworthy, kids = playful...). NEVER default to a dark purple/blue space theme and NEVER imitate the NovaSites builder UI look. Every site must feel unique: vary hero style, section order, typography and color palette. Write visible text content in the same language as the user request.',
@@ -1014,14 +1020,14 @@ const ENGINE = {
         if(i === 3) startDoc(cfg), addPart(sitePart(cfg,'nav'));
         if(i === 4) addPart(sitePart(cfg,'hero'));
         if(i === 5){ for(const s of cfg.sections.slice(1)){ addPart(sitePart(cfg, s)); await sleep(340); } addPart(sitePart(cfg,'footer')); }
-      } else if(i === 5){ $('#frame').srcdoc = liveHTML; }
+      } else if(i === 5){ $('#frame').srcdoc = armSite(liveHTML); }
       await sleep(i === 5 ? 500 : 480 + Math.random()*520);
       row.classList.remove('doing'); row.classList.add('done');
       setAgent(agid, 'd');
       if(i === 8) setAgent('a11y','d');
     }
     siteHTML = liveHTML || assemble(cfg);
-    if(!liveHTML) $('#frame').srcdoc = siteHTML;
+    if(!liveHTML) $('#frame').srcdoc = armSite(siteHTML);
     renderCode();
     $('#furl').textContent = (liveHTML ? '🧠 claude-ai/' : '📦 demo-template/') + cfg.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
     let warnEl = $('#aiWarn');
@@ -1111,7 +1117,7 @@ const ENGINE = {
         const fence = out.match(/```(?:html)?\s*([\s\S]*?)(?:```|$)/);
         if(fence && /<html|<!DOCTYPE/i.test(fence[1])){
           siteHTML = fence[1].trim();
-          $('#frame').srcdoc = siteHTML; renderCode();
+          $('#frame').srcdoc = armSite(siteHTML); renderCode();
           $('#dlBtn').disabled = false; $('#openBtn').disabled = false; $('#copyBtn').disabled = false;
           out = out.replace(/```(?:html)?[\s\S]*?```/, '').trim() || t.cApplied;
           clog(t.cAppliedLog, 'ok', t.agFrontend);
