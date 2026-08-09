@@ -959,12 +959,16 @@ const ENGINE = {
       const now = Date.now();
       if(streamed && now - lastPaint > 1000){ lastPaint = now; $('#frame').srcdoc = doc; }
     };
-    const data = await claudeAPI({max_tokens:12000,
+    const data = await claudeAPI({max_tokens:16000,
         system:'You are the Frontend Developer agent of NovaSites, an AI website builder. Return ONLY a complete, valid, single-file HTML document (all CSS/JS inline). No markdown fences, no explanation. Modern, responsive, beautiful, with smooth animations. CRITICAL DESIGN RULES: choose colors, fonts and layout that FIT the requested business/topic (bakery = warm & cozy, gym = bold & energetic, law firm = classic & trustworthy, kids = playful...). NEVER default to a dark purple/blue space theme and NEVER imitate the NovaSites builder UI look. Every site must feel unique: vary hero style, section order, typography and color palette. Write visible text content in the same language as the user request.',
         messages:[{role:'user', content:'Build this website: ' + p}]}, onDelta);
     let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
     const fence = out.match(/```(?:html)?\s*([\s\S]*?)```/);
     if(fence) out = fence[1].trim();
+    if(!/^<!DOCTYPE|^<html/i.test(out)){
+      const m = out.match(/<!DOCTYPE[\s\S]*$|<html[\s\S]*$/i);
+      if(m){ out = m[0].trim(); const end = out.lastIndexOf('</html>'); if(end > -1) out = out.slice(0, end + 7); out = out.replace(/```\s*$/, '').trim(); }
+    }
     if(!/^<!DOCTYPE|^<html/i.test(out)) throw new Error('Invalid HTML from AI');
     return out;
   },
@@ -1104,7 +1108,7 @@ const ENGINE = {
             messages: chatHist.slice(-10)});
         let out = (data.content||[]).filter(b => b.type==='text').map(b => b.text).join('\n').trim();
         chatHist.push({role:'assistant', content:out});
-        const fence = out.match(/```(?:html)?\s*([\s\S]*?)```/);
+        const fence = out.match(/```(?:html)?\s*([\s\S]*?)(?:```|$)/);
         if(fence && /<html|<!DOCTYPE/i.test(fence[1])){
           siteHTML = fence[1].trim();
           $('#frame').srcdoc = siteHTML; renderCode();
