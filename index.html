@@ -351,6 +351,7 @@
           <button class="icob" id="dlBtn" data-i18n="dl" disabled>⬇️</button>
           <button class="icob" id="openBtn" title="Open in new tab" disabled>↗</button>
           <button class="icob" id="copyBtn" title="Copy code" disabled>⧉</button>
+          <button class="icob" id="fixBtn" title="AI Fix — problems automatically theek karo" disabled>🔧</button>
           <button class="icob" id="fsBtn" title="Fullscreen">⛶</button>
         </div>
         <div class="devs">
@@ -594,6 +595,22 @@ let user = null, memUser = null;
 try{ const v = localStorage.getItem('nv-user'); user = v ? JSON.parse(v) : null; }catch(e){ user = memUser; }
 function saveUser(u){ user = u; memUser = u; try{ u ? localStorage.setItem('nv-user', JSON.stringify(u)) : localStorage.removeItem('nv-user'); }catch(e){} }
 let aiKey = 'server', aiModel = 'claude-sonnet-5'; /* AI runs via /api/claude — key server par hai */
+let fixTried = false;
+window.addEventListener('message', e => {
+  if(!e.data || !e.data.nvErr) return;
+  try{ clog('🐞 Site error: ' + e.data.nvErr, 'wr'); }catch(_){}
+  if(fixTried) return;
+  const msg = e.data.nvErr;
+  const go = () => {
+    if(fixTried) return;
+    if(building || !siteHTML){ setTimeout(go, 1500); return; }
+    fixTried = true;
+    $('#fab').click();
+    $('#cin2').value = (lang === 'hi' ? 'Website में JS error आ रहा है: "' : 'The website throws a JS error: "') + msg + (lang === 'hi' ? '" — इसे fix करके पूरा updated HTML दो।' : '" — fix it and return the full updated HTML.');
+    ENGINE.chatSend();
+  };
+  go();
+});
 async function claudeAPI(payload, onDelta){
   if(onDelta){
     try{ return await claudeStream(payload, onDelta); }
@@ -931,7 +948,7 @@ let offParts = null, offCSS = '';
 function offHTML(){ return '<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>' + offCSS + '<\/style><\/head><body>' + (offParts || []).join('\n') + '<\/body><\/html>'; }
 function armSite(h){
   if(!h) return h;
-  var guard = '<scr' + 'ipt>(function(){document.addEventListener("click",function(e){var t=e.target;var a=t&&t.closest?t.closest("a"):null;if(a){var href=a.getAttribute("href")||"";if(/^https?:/i.test(href)){a.setAttribute("target","_blank");a.setAttribute("rel","noopener");}else if(href.indexOf("#")!==0){e.preventDefault();}}},true);document.addEventListener("submit",function(e){e.preventDefault();},false);})();</scr' + 'ipt>';
+  var guard = '<scr' + 'ipt>(function(){document.addEventListener("click",function(e){var t=e.target;var a=t&&t.closest?t.closest("a"):null;if(a){var href=a.getAttribute("href")||"";if(/^https?:/i.test(href)){a.setAttribute("target","_blank");a.setAttribute("rel","noopener");}else if(href.indexOf("#")!==0){e.preventDefault();}}},true);document.addEventListener("submit",function(e){e.preventDefault();},false);window.addEventListener("error",function(e){try{parent.postMessage({nvErr:String((e&&e.message)||"script error")},"*");}catch(_){}});})();</scr' + 'ipt>';
   if(/<head[^>]*>/i.test(h)) return h.replace(/<head([^>]*)>/i, '<head$1>' + guard);
   return guard + h;
 }
@@ -984,7 +1001,7 @@ const ENGINE = {
     if(!p && cfg) p = cfg.prompt;
     if(!p){ $('#prompt').focus(); $('#prompt').style.borderColor = '#f43f5e'; setTimeout(()=>{$('#prompt').style.borderColor='';},900); return; }
     building = true;
-    ['genBtn','regenBtn','dlBtn','openBtn','copyBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = true);
+    ['genBtn','regenBtn','dlBtn','openBtn','copyBtn','fixBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = true);
     showTab('frame'); resetAgents();
     const t = T[lang];
     /* build step list */
@@ -1007,6 +1024,20 @@ const ENGINE = {
       try{ liveHTML = await this.liveGen(p); clog(t.liveOk, 'ok', t.agFrontend); }
       catch(err){ liveErr = err.message; clog(t.liveFail + ' ' + err.message, 'wr'); this.chatBot('⚠️ ' + t.liveFailChat + '\n(' + err.message + ')', true); }
     }
+    let warnEl = $('#aiWarn');
+    if(!warnEl){ warnEl = document.createElement('div'); warnEl.id = 'aiWarn'; warnEl.style.cssText = 'display:none;background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fecaca;padding:12px 16px;border-radius:12px;margin:0 0 10px;font-size:.88rem;font-weight:600;border:1px solid #ef4444'; const fw = $('#frameWrap'); fw.parentNode.insertBefore(warnEl, fw); }
+    if(!liveHTML){
+      /* AI-only: koi template fallback nahi — saaf error dikhao */
+      ov.hidden = true;
+      warnEl.style.display = 'block';
+      warnEl.textContent = (lang === 'hi' ? '⚠️ AI से site नहीं बन पाई — दोबारा try करो। वजह: ' : '⚠️ The AI could not build the site — please try again. Reason: ') + (liveErr || 'unknown');
+      resetAgents();
+      ['genBtn','regenBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = false);
+      if(siteHTML){ ['dlBtn','openBtn','copyBtn','fixBtn'].forEach(id => $('#'+id).disabled = false); }
+      building = false;
+      return;
+    }
+    warnEl.style.display = 'none';
     const AG = ['planner','designer','writer','frontend','frontend','frontend','animator','seo','mobile','debug'];
     for(let i=0; i<t.bsteps.length; i++){
       const row = list.children[i];
@@ -1015,52 +1046,36 @@ const ENGINE = {
       setAgent(agid, 'w');
       if(i === 8) setAgent('a11y','w');
       clog(t.blogs[i], i >= 8 ? 'ok' : 'inf', t['ag' + agid.charAt(0).toUpperCase() + agid.slice(1)]);
-      /* offline progressive injection */
-      if(!liveHTML){
-        if(i === 3) startDoc(cfg), addPart(sitePart(cfg,'nav'));
-        if(i === 4) addPart(sitePart(cfg,'hero'));
-        if(i === 5){ for(const s of cfg.sections.slice(1)){ addPart(sitePart(cfg, s)); await sleep(340); } addPart(sitePart(cfg,'footer')); }
-      } else if(i === 5){ $('#frame').srcdoc = armSite(liveHTML); }
-      await sleep(i === 5 ? 500 : 480 + Math.random()*520);
+      if(i === 5) $('#frame').srcdoc = armSite(liveHTML);
+      await sleep(140);
       row.classList.remove('doing'); row.classList.add('done');
       setAgent(agid, 'd');
       if(i === 8) setAgent('a11y','d');
     }
-    siteHTML = liveHTML || assemble(cfg);
-    if(!liveHTML) $('#frame').srcdoc = armSite(siteHTML);
+    siteHTML = liveHTML; fixTried = false;
     renderCode();
-    $('#furl').textContent = (liveHTML ? '🧠 claude-ai/' : '📦 demo-template/') + cfg.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
-    let warnEl = $('#aiWarn');
-    if(!warnEl){ warnEl = document.createElement('div'); warnEl.id = 'aiWarn'; warnEl.style.cssText = 'display:none;background:linear-gradient(90deg,#7f1d1d,#991b1b);color:#fecaca;padding:12px 16px;border-radius:12px;margin:0 0 10px;font-size:.88rem;font-weight:600;border:1px solid #ef4444'; const fw = $('#frameWrap'); fw.parentNode.insertBefore(warnEl, fw); }
-    if(liveTried && !liveHTML){
-      warnEl.style.display = 'block';
-      warnEl.textContent = (lang === 'hi' ? '⚠️ असली AI से connect नहीं हुआ — नीचे सिर्फ DEMO TEMPLATE है! वजह: ' : '⚠️ Could not reach the real AI — below is only the DEMO TEMPLATE! Reason: ') + liveErr;
-    } else { warnEl.style.display = 'none'; }
+    $('#furl').textContent = '🧠 claude-ai/' + cfg.name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
     history.unshift({prompt:p, html:siteHTML, cfg:JSON.parse(JSON.stringify(cfg)), time:new Date().toLocaleTimeString(lang==='hi'?'hi-IN':'en-IN',{hour:'2-digit',minute:'2-digit'})});
     history = history.slice(0,6);
-    clog('✔ ' + t.genDone + (liveHTML ? ' (Claude AI)' : ''), 'ok', t.agDebug);
+    clog('✔ ' + t.genDone + ' (Claude AI)', 'ok', t.agDebug);
     await sleep(450);
     ov.hidden = true;
-    ['genBtn','regenBtn','dlBtn','openBtn','copyBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = false);
+    ['genBtn','regenBtn','dlBtn','openBtn','copyBtn','fixBtn','qaSection','qaTheme','qaColor'].forEach(id => $('#'+id).disabled = false);
     building = false;
     this.chatBot('✅ ' + t.chDone.replace('{n}', cfg.name));
   },
   quick(kind){
-    if(!cfg || building) return;
-    const t = T[lang];
-    if(kind === 'section'){
-      const pool = ['gallery','testi','about','contact'];
-      const nxt = pool.find(s => !cfg.sections.includes(s));
-      if(nxt){ cfg.sections.push(nxt); setAgent('frontend','w'); this.rerender(); setTimeout(()=>setAgent('frontend','d'),700); clog(t.qaAddLog, 'ok', t.agFrontend); }
-      else this.chatBot(t.qaFull);
-    }
-    if(kind === 'theme'){ cfg.dark = !cfg.dark; setAgent('designer','w'); this.rerender(); setTimeout(()=>setAgent('designer','d'),700); clog(t.qaThemeLog, 'ok', t.agDesigner); }
-    if(kind === 'color'){
-      const cs = ['#8b5cf6','#3b82f6','#10b981','#ef4444','#f97316','#ec4899','#06b6d4','#f59e0b'];
-      cfg.accent = cs[(cs.indexOf(cfg.accent)+1) % cs.length];
-      setAgent('designer','w'); this.rerender(); setTimeout(()=>setAgent('designer','d'),700);
-      clog(t.qaColorLog + ' ' + cfg.accent, 'ok', t.agDesigner);
-    }
+    if(building) return;
+    if(!siteHTML){ this.chatBot(T[lang].cNeed); $('#fab').click(); return; }
+    const hi = lang === 'hi';
+    const map = {
+      section: hi ? 'Website में एक नया attractive section add करो' : 'Add a new attractive section to the website',
+      theme: hi ? 'Website की theme light/dark में toggle कर दो' : 'Toggle the website between light and dark theme',
+      color: hi ? 'Website का color scheme एक fresh नए palette में बदल दो' : 'Change the color scheme to a fresh new palette'
+    };
+    $('#fab').click();
+    $('#cin2').value = map[kind] || '';
+    this.chatSend();
   },
   /* ---------- chat ---------- */
   addChat(text, who, tag, err){
@@ -1089,21 +1104,12 @@ const ENGINE = {
     const hasAny = ws => ws.some(w => tk.includes(w));
     await sleep(420 + Math.random()*400);
     /* site edit commands (need a generated site) */
-    let col = null; for(const w in COLORS){ if(tk.includes(w)){ col = COLORS[w]; break; } }
-    if(cfg && col){ cfg.accent = col; ENGINE.rerender(); setAgent('designer','d'); return done('🎨 ' + t.cColor); }
-    if(cfg && hasAny(['dark','डार्क'])){ cfg.dark = true; ENGINE.rerender(); return done('🌙 ' + t.cDark); }
-    if(cfg && hasAny(['light','लाइट','सफेद'])){ cfg.dark = false; ENGINE.rerender(); return done('☀️ ' + t.cLight); }
-    if(cfg && hasAny(['form','फॉर्म','फ़ॉर्म'])){ if(!cfg.sections.includes('contact')) cfg.sections.push('contact'); ENGINE.rerender(); return done('📮 ' + t.cForm); }
-    if(cfg && hasAny(['gallery','गैलरी'])){ if(!cfg.sections.includes('gallery')) cfg.sections.push('gallery'); ENGINE.rerender(); return done('🖼️ ' + t.cGal); }
-    if(cfg && hasAny(['testimonial','टेस्टिमोनियल','review'])){ if(!cfg.sections.includes('testi')) cfg.sections.push('testi'); ENGINE.rerender(); return done('⭐ ' + t.cTesti); }
-    if(cfg && hasAny(['animation kam','reduce animation','एनीमेशन कम','कम एनीमेशन'])){ cfg.anim = false; ENGINE.rerender(); return done('🎞️ ' + t.cAnim); }
-    if(cfg && hasAny(['professional','प्रोफेशनल'])){ cfg.accent = '#6366f1'; ENGINE.rerender(); return done('👔 ' + t.cProf); }
     if(cfg && hasAny(['publish','पब्लिश'])){ ENGINE.download(); return done('🚀 ' + t.cPub); }
     if(hasAny(['download','डाउनलोड'])){ if(siteHTML){ ENGINE.download(); return done('⬇️ ' + t.cDl); } return done(t.cNeed); }
     if(hasAny(['rebuild','dobara','दोबारा','regenerate','फिर से बना'])){ done(t.cRebuild); ENGINE.generate(true); return; }
     if(hasAny(['help','madad','मदद'])) return done('📖 ' + t.cHelp);
     if(hasAny(['hello','hi','namaste','नमस्ते','hey'])) return done('👋 ' + (user ? user.name + ', ' : '') + t.cHi);
-    if(!cfg && (col || hasAny(['site','साइट','website','वेबसाइट','बना']))) return done('🏗️ ' + t.cNeed);
+    if(!cfg && hasAny(['site','साइट','website','वेबसाइट','बना'])) return done('🏗️ ' + t.cNeed);
     /* live AI fallback */
     if(aiKey){
       try{
@@ -1118,7 +1124,7 @@ const ENGINE = {
         if(fence && /<html|<!DOCTYPE/i.test(fence[1])){
           siteHTML = fence[1].trim();
           $('#frame').srcdoc = armSite(siteHTML); renderCode();
-          $('#dlBtn').disabled = false; $('#openBtn').disabled = false; $('#copyBtn').disabled = false;
+          $('#dlBtn').disabled = false; $('#openBtn').disabled = false; $('#copyBtn').disabled = false; $('#fixBtn').disabled = false;
           out = out.replace(/```(?:html)?[\s\S]*?```/, '').trim() || t.cApplied;
           clog(t.cAppliedLog, 'ok', t.agFrontend);
         }
@@ -1169,6 +1175,12 @@ window.addEventListener('DOMContentLoaded', () => {
   $('#openBtn').addEventListener('click', () => { if(!siteHTML) return; const u = URL.createObjectURL(new Blob([siteHTML], {type:'text/html'})); window.open(u, '_blank'); setTimeout(() => URL.revokeObjectURL(u), 60000); });
   $('#copyBtn').addEventListener('click', async () => { if(!siteHTML) return; try{ await navigator.clipboard.writeText(siteHTML); clog(lang === 'hi' ? 'कोड कॉपी हो गया ✔' : 'Code copied ✔', 'ok'); $('#copyBtn').textContent = '✔'; setTimeout(() => { $('#copyBtn').textContent = '⧉'; }, 1200); }catch(e){} });
   $('#prompt').addEventListener('keydown', e => { if((e.ctrlKey || e.metaKey) && e.key === 'Enter') ENGINE.generate(); });
+  $('#fixBtn').addEventListener('click', () => {
+    if(!siteHTML) return;
+    $('#fab').click();
+    $('#cin2').value = lang === 'hi' ? 'Website को ध्यान से check करो और जो भी problems हैं (broken layout, JS errors, missing चीज़ें, खाली links) सब fix करके पूरा updated HTML दो।' : 'Carefully check the website and fix any problems (broken layout, JS errors, missing pieces, empty links) — return the full updated HTML.';
+    ENGINE.chatSend();
+  });
 
   /* generator */
   $('#genBtn').addEventListener('click', () => ENGINE.generate(false));
